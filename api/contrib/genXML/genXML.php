@@ -19,12 +19,16 @@
 /* * ************************************************** */
 /* Constantes de validacion                             */
 /* * ************************************************** */
-const TIPODOCREFVALUES = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '99');
-const CODIDOREFVALUES = array('01','02','04','05','99');
+define("TIPODOCREFVALUES", array('01', '02', '03', '04', '05', '06', '07', '08', '09', '99'));
+define('CODIDOREFVALUES', array('01','02','04','05','99'));
 const CODIGOACTIVIDADSIZE = 6;
 const EMISORNOMBREMAXSIZE = 100;
+const EMISORNUMEROTELMIN = 8;
+const EMISORNUMEROTELMAX = 20;
 const RECEPTORNOMBREMAXSIZE = 100;
-const RECEPTOROTRASSENASEXTRANJEROMAXSIZE = 250;
+const RECEPTOROTRASSENASMAXSIZE = 250;
+const RECEPTOROTRASSENASEXTRANJEROMAXSIZE = 300;
+const EMAIL_REGEX = "/^\s*\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*\s*$/";
 
 
 /* * ************************************************** */
@@ -36,7 +40,8 @@ function genXMLFe()
     // Datos contribuyente
     $clave                          = params_get("clave");
     $proveedorSistemas              = params_get("proveedor_sistemas");
-    $codigoActividad                = params_get("codigo_actividad");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadEmisor          = params_get("codigo_actividad_emisor");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadReceptor        = params_get("codigo_actividad_receptor");
     $consecutivo                    = params_get("consecutivo");
     $fechaEmision                   = params_get("fecha_emision");
 
@@ -52,9 +57,8 @@ function genXMLFe()
     $emisorOtrasSenas               = params_get("emisor_otras_senas");
     $emisorCodPaisTel               = params_get("emisor_cod_pais_tel");
     $emisorTel                      = params_get("emisor_tel");
-    $emisorCodPaisFax               = params_get("emisor_cod_pais_fax");
-    $emisorFax                      = params_get("emisor_fax");
-    $emisorEmail                    = params_get("emisor_email");
+    $emisorEmail                    = params_get("emisor_email"); // This API only supports one email address for emisor
+    $registroFiscal8707             = params_get("registrofiscal8707");
 
     // Datos receptor
     $omitir_receptor                = params_get("omitir_receptor");        // Deprecated
@@ -71,12 +75,11 @@ function genXMLFe()
     $receptorOtrasSenasExtranjero   = params_get("receptor_otras_senas_extranjero");
     $receptorCodPaisTel             = params_get("receptor_cod_pais_tel");
     $receptorTel                    = params_get("receptor_tel");
-    $receptorCodPaisFax             = params_get("receptor_cod_pais_fax");
-    $receptorFax                    = params_get("receptor_fax");
     $receptorEmail                  = params_get("receptor_email");
 
     // Detalles de tiquete / Factura
     $condVenta                      = params_get("condicion_venta");
+    $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
     $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
@@ -119,9 +122,9 @@ function genXMLFe()
         grace_debug(params_get("medios_pago"));
 
     // Validate string sizes
-    $codigoActividad = str_pad($codigoActividad, 6, "0", STR_PAD_LEFT);
-    if (strlen($codigoActividad) != CODIGOACTIVIDADSIZE)
-        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividad is ".$codigoActividad);
+    $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
+    if (strlen($codigoActividadEmisor) != CODIGOACTIVIDADSIZE)
+        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadEmisor is ".$codigoActividadEmisor);
 
     if (strlen($emisorNombre) > EMISORNOMBREMAXSIZE)
         error_log("emisorNombreSize: ".EMISORNOMBREMAXSIZE." is greater than emisorNombre: ".$emisorNombre);
@@ -129,8 +132,8 @@ function genXMLFe()
     if (strlen($receptorNombre) > RECEPTORNOMBREMAXSIZE)
         error_log("receptorNombreMaxSize: ".RECEPTORNOMBREMAXSIZE." is greater than receptorNombre: ".$receptorNombre);
 
-    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASEXTRANJEROMAXSIZE)
-        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASEXTRANJEROMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
+    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASMAXSIZE)
+        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
 
     if ( isset($otrosCargos) && $otrosCargos != "")
         if (count($otrosCargos) > 15){
@@ -153,7 +156,19 @@ function genXMLFe()
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         <Clave>' . $clave . '</Clave>
         <ProveedorSistemas>' . $proveedorSistemas . '</ProveedorSistemas>
-        <CodigoActividad>' . $codigoActividad . '</CodigoActividad>
+        <CodigoActividadEmisor>' . $codigoActividadEmisor . '</CodigoActividadEmisor>';
+
+    if ( isset($codigoActividadReceptor) && $codigoActividadReceptor != "")
+    {
+        $codigoActividadReceptor = str_pad($codigoActividadReceptor, 6, "0", STR_PAD_LEFT);
+        if (strlen($codigoActividadReceptor) != CODIGOACTIVIDADSIZE)
+            error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadReceptor is ".$codigoActividadReceptor);
+
+        $xmlString .= '
+        <CodigoActividadReceptor>' . $codigoActividadReceptor . '</CodigoActividadReceptor>';
+    }
+
+    $xmlString .= '
         <NumeroConsecutivo>' . $consecutivo . '</NumeroConsecutivo>
         <FechaEmision>' . $fechaEmision . '</FechaEmision>
         <Emisor>
@@ -162,6 +177,11 @@ function genXMLFe()
                 <Tipo>' . $emisorTipoIdentif . '</Tipo>
                 <Numero>' . $emisorNumIdentif . '</Numero>
             </Identificacion>';
+
+    if ( isset($registroFiscal8707) && $registroFiscal8707 != "")
+        $xmlString .= '
+        <Registrofiscal8707>' . $registroFiscal8707 . '</Registrofiscal8707>';
+
     if ( isset($emisorNombreComercial) && $emisorNombreComercial != "")
         $xmlString .= '
         <NombreComercial>' . $emisorNombreComercial . '</NombreComercial>';
@@ -180,7 +200,7 @@ function genXMLFe()
             </Ubicacion>';
     }
 
-    if ($emisorCodPaisTel != '' && $emisorTel != '')
+    if ($emisorCodPaisTel != '' && $emisorTel != '' && $emisorTel >= EMISORNUMEROTELMIN && $emisorTel <= EMISORNUMEROTELMAX)
     {
         $xmlString .= '
             <Telefono>
@@ -189,40 +209,15 @@ function genXMLFe()
             </Telefono>';
     }
 
-    if ($emisorCodPaisFax != '' && $emisorFax != '')
-    {
-        $xmlString .= '
-            <Fax>
-                <CodigoPais>' . $emisorCodPaisFax . '</CodigoPais>
-                <NumTelefono>' . $emisorFax . '</NumTelefono>
-            </Fax>';
+    if (preg_match(EMAIL_REGEX, trim($emisorEmail))) {
+        $xmlString .= '<CorreoElectronico>' . trim($emisorEmail) . '</CorreoElectronico></Emisor>';
+    } else {
+        error_log(sprintf("Invalid email format: '%s' does not meet the regex pattern: %s", $emisorEmail, EMAIL_REGEX));
     }
-
-    $xmlString .= '<CorreoElectronico>' . $emisorEmail . '</CorreoElectronico>
-        </Emisor>';
 
     $xmlString .= '<Receptor>
         <Nombre>' . $receptorNombre . '</Nombre>';
 
-    /*if ($receptorTipoIdentif == '05')
-    {
-        if ($receptorTipoIdentif != '' &&  $receptorNumIdentif != '')
-        {
-            $xmlString .= '<IdentificacionExtranjero>'
-                    . $receptorNumIdentif
-                    . ' </IdentificacionExtranjero>';
-        }
-        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300)
-        {
-            $xmlString .= '<OtrasSenasExtranjero>'
-                    . $receptorOtrasSenasExtranjero
-                    . ' </OtrasSenasExtranjero>';
-        }
-    }
-    else
-    {*/
-        /*if ($receptorTipoIdentif != '' &&  $receptorNumIdentif != '')
-        {*/
         $xmlString .= '
         <Identificacion>
             <Tipo>' . $receptorTipoIdentif . '</Tipo>
@@ -237,10 +232,10 @@ function genXMLFe()
             '</IdentificacionExtranjero>';
         }
 
-        if ( isset($receptorNombreComercial) && $receptorNombreComercial != "")
-        $xmlString .= '
-        <NombreComercial>' . $receptorNombreComercial . '</NombreComercial>';
-        //}
+        if ( isset($receptorNombreComercial) && $receptorNombreComercial != "") {
+            $xmlString .= '
+            <NombreComercial>' . $receptorNombreComercial . '</NombreComercial>';
+        }
 
         if ($receptorProvincia != '' && $receptorCanton != '' && $receptorDistrito != '' && $receptorOtrasSenas != '')
         {
@@ -256,13 +251,12 @@ function genXMLFe()
             </Ubicacion>';
         }
 
-        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300){
+        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= RECEPTOROTRASSENASEXTRANJEROMAXSIZE){
             $xmlString .= '
             <OtrasSenasExtranjero>'
                 .$receptorOtrasSenasExtranjero.
             '</OtrasSenasExtranjero>';
         }
-    /*}*/
 
     if ($receptorCodPaisTel != '' && $receptorTel != '')
     {
@@ -273,15 +267,6 @@ function genXMLFe()
             </Telefono>';
     }
 
-    if ($receptorCodPaisFax != '' && $receptorFax != '')
-    {
-        $xmlString .= '
-            <Fax>
-                <CodigoPais>' . $receptorCodPaisFax . '</CodigoPais>
-                <NumTelefono>' . $receptorFax . '</NumTelefono>
-            </Fax>';
-    }
-
     if ($receptorEmail != '')
         $xmlString .= '<CorreoElectronico>' . $receptorEmail . '</CorreoElectronico>';
 
@@ -290,21 +275,14 @@ function genXMLFe()
     $xmlString .= '
         <CondicionVenta>' . $condVenta . '</CondicionVenta>';
 
+    if ( isset($condVentaOtros) && $condVentaOtros != "" ){
+        $xmlString .= '
+        <CondicionVentaOtros>' . $condVentaOtros . '</CondicionVentaOtros>';
+    }
+
     if ( isset($plazoCredito) && $plazoCredito != "" )
     $xmlString .= '
         <PlazoCredito>' . $plazoCredito . '</PlazoCredito>';
-
-    if ( isset($medioPago) && $medioPago != "" && $medioPago != 0 )
-    $xmlString .= '
-        <MedioPago>' . $medioPago . '</MedioPago>';
-    else
-        //mediosPago 4 nodos nada más
-        if ( isset($mediosPago) && $mediosPago != ""){
-            foreach ($mediosPago as $o)
-            {
-                $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
-            }
-        }
 
     $xmlString .= '
         <DetalleServicio>';
@@ -546,6 +524,13 @@ function genXMLFe()
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
+    if ( isset($mediosPago) && $mediosPago != ""){
+        foreach ($mediosPago as $o)
+        {
+            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+        }
+    }
+
     $xmlString .= '
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
@@ -617,7 +602,8 @@ function genXMLNC()
     // Datos contribuyente
     $clave                          = params_get("clave");
     $proveedorSistemas              = params_get("proveedor_sistemas");
-    $codigoActividad                = params_get("codigo_actividad");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadEmisor          = params_get("codigo_actividad_emisor");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadReceptor        = params_get("codigo_actividad_receptor");
     $consecutivo                    = params_get("consecutivo");
     $fechaEmision                   = params_get("fecha_emision");
 
@@ -633,9 +619,8 @@ function genXMLNC()
     $emisorOtrasSenas               = params_get("emisor_otras_senas");
     $emisorCodPaisTel               = params_get("emisor_cod_pais_tel");
     $emisorTel                      = params_get("emisor_tel");
-    $emisorCodPaisFax               = params_get("emisor_cod_pais_fax");
-    $emisorFax                      = params_get("emisor_fax");
     $emisorEmail                    = params_get("emisor_email");
+    $registroFiscal8707             = params_get("registrofiscal8707");
 
     // Datos receptor
     $omitir_receptor                = params_get("omitir_receptor");        // Deprecated
@@ -652,12 +637,11 @@ function genXMLNC()
     $receptorOtrasSenasExtranjero   = params_get("receptor_otras_senas_extranjero");
     $receptorCodPaisTel             = params_get("receptor_cod_pais_tel");
     $receptorTel                    = params_get("receptor_tel");
-    $receptorCodPaisFax             = params_get("receptor_cod_pais_fax");
-    $receptorFax                    = params_get("receptor_fax");
     $receptorEmail                  = params_get("receptor_email");
 
     // Detalles de tiquete / Factura
     $condVenta                      = params_get("condicion_venta");
+    $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
     $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
@@ -698,9 +682,9 @@ function genXMLNC()
         grace_debug(params_get("medios_pago"));
 
     // Validate string sizes
-    $codigoActividad = str_pad($codigoActividad, 6, "0", STR_PAD_LEFT);
-    if (strlen($codigoActividad) != CODIGOACTIVIDADSIZE)
-        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividad is ".$codigoActividad);
+    $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
+    if (strlen($codigoActividadEmisor) != CODIGOACTIVIDADSIZE)
+        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadEmisor is ".$codigoActividadEmisor);
 
     if (strlen($emisorNombre) > EMISORNOMBREMAXSIZE)
         error_log("emisorNombreSize: ".EMISORNOMBREMAXSIZE." is greater than emisorNombre: ".$emisorNombre);
@@ -708,8 +692,8 @@ function genXMLNC()
     if (strlen($receptorNombre) > RECEPTORNOMBREMAXSIZE)
         error_log("receptorNombreMaxSize: ".RECEPTORNOMBREMAXSIZE." is greater than receptorNombre: ".$receptorNombre);
 
-    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASEXTRANJEROMAXSIZE)
-        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASEXTRANJEROMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
+    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASMAXSIZE)
+        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
 
     if ( isset($otrosCargos) && $otrosCargos != "")
         if (count($otrosCargos) > 15){
@@ -732,7 +716,19 @@ function genXMLNC()
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Clave>' . $clave . '</Clave>
     <ProveedorSistemas>' . $proveedorSistemas . '</ProveedorSistemas>
-    <CodigoActividad>' . $codigoActividad . '</CodigoActividad>
+    <CodigoActividadEmisor>' . $codigoActividadEmisor . '</CodigoActividadEmisor>';
+
+    if ( isset($codigoActividadReceptor) && $codigoActividadReceptor != "")
+    {
+        $codigoActividadReceptor = str_pad($codigoActividadReceptor, 6, "0", STR_PAD_LEFT);
+        if (strlen($codigoActividadReceptor) != CODIGOACTIVIDADSIZE)
+            error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadReceptor is ".$codigoActividadReceptor);
+
+        $xmlString .= '
+        <CodigoActividadReceptor>' . $codigoActividadReceptor . '</CodigoActividadReceptor>';
+    }
+
+    $xmlString .= '
     <NumeroConsecutivo>' . $consecutivo . '</NumeroConsecutivo>
     <FechaEmision>' . $fechaEmision . '</FechaEmision>
     <Emisor>
@@ -741,6 +737,11 @@ function genXMLNC()
             <Tipo>' . $emisorTipoIdentif . '</Tipo>
             <Numero>' . $emisorNumIdentif . '</Numero>
         </Identificacion>';
+
+    if ( isset($registroFiscal8707) && $registroFiscal8707 != "")
+        $xmlString .= '
+        <Registrofiscal8707>' . $registroFiscal8707 . '</Registrofiscal8707>';
+
     if ( isset($emisorNombreComercial) && $emisorNombreComercial != "")
         $xmlString .= '
         <NombreComercial>' . $emisorNombreComercial . '</NombreComercial>';
@@ -759,7 +760,7 @@ function genXMLNC()
             </Ubicacion>';
     }
 
-    if ($emisorCodPaisTel != '' && $emisorTel != '')
+    if ($emisorCodPaisTel != '' && $emisorTel != '' && $emisorTel >= EMISORNUMEROTELMIN && $emisorTel <= EMISORNUMEROTELMAX)
     {
         $xmlString .= '
         <Telefono>
@@ -768,41 +769,17 @@ function genXMLNC()
         </Telefono>';
     }
 
-    if ($emisorCodPaisFax != '' && $emisorFax != '')
-    {
-        $xmlString .= '
-        <Fax>
-            <CodigoPais>' . $emisorCodPaisFax . '</CodigoPais>
-            <NumTelefono>' . $emisorFax . '</NumTelefono>
-        </Fax>';
+    if (preg_match(EMAIL_REGEX, trim($emisorEmail))) {
+        $xmlString .= '<CorreoElectronico>' . trim($emisorEmail) . '</CorreoElectronico></Emisor>';
+    } else {
+        error_log(sprintf("Invalid email format: '%s' does not meet the regex pattern: %s", $emisorEmail, EMAIL_REGEX));
     }
-
-
-    $xmlString .= '<CorreoElectronico>' . $emisorEmail . '</CorreoElectronico>
-    </Emisor>';
 
     if ($omitir_receptor != 'true')
     {
         $xmlString .= '<Receptor>
             <Nombre>' . $receptorNombre . '</Nombre>';
 
-        /*if ($receptorTipoIdentif == '05')
-        {
-            if ($receptorTipoIdentif != '' && $receptorNumIdentif != '')
-            {
-                $xmlString .= '<IdentificacionExtranjero>'
-                        . $receptorNumIdentif
-                        . ' </IdentificacionExtranjero>';
-            }
-            if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300)
-            {
-                $xmlString .= '<OtrasSenasExtranjero>'
-                        . $receptorOtrasSenasExtranjero
-                        . ' </OtrasSenasExtranjero>';
-            }
-        }
-        else
-        {*/
         if ($receptorTipoIdentif != '' && $receptorNumIdentif != '')
         {
             $xmlString .= '
@@ -839,7 +816,7 @@ function genXMLNC()
                 </Ubicacion>';
         }
 
-        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300){
+        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= RECEPTOROTRASSENASEXTRANJEROMAXSIZE){
             $xmlString .= '
             <OtrasSenasExtranjero>'
                 .$receptorOtrasSenasExtranjero.
@@ -855,15 +832,6 @@ function genXMLNC()
             </Telefono>';
         }
 
-        if ($receptorCodPaisFax != '' && $receptorFax != '')
-        {
-            $xmlString .= '
-            <Fax>
-                <CodigoPais>' . $receptorCodPaisFax . '</CodigoPais>
-                <NumTelefono>' . $receptorFax . '</NumTelefono>
-            </Fax>';
-        }
-
         if ($receptorEmail != '')
             $xmlString .= '<CorreoElectronico>' . $receptorEmail . '</CorreoElectronico>';
 
@@ -873,21 +841,14 @@ function genXMLNC()
     $xmlString .= '
     <CondicionVenta>' . $condVenta . '</CondicionVenta>';
 
+    if ( isset($condVentaOtros) && $condVentaOtros != "" ){
+        $xmlString .= '
+        <CondicionVentaOtros>' . $condVentaOtros . '</CondicionVentaOtros>';
+    }
+
     if ( isset($plazoCredito) && $plazoCredito != "" )
     $xmlString .= '
     <PlazoCredito>' . $plazoCredito . '</PlazoCredito>';
-
-    if ( isset($medioPago) && $medioPago != "" && $medioPago != 0 )
-    $xmlString .= '
-        <MedioPago>' . $medioPago . '</MedioPago>';
-    else
-        //mediosPago 4 nodos nada más
-        if ( isset($mediosPago) && $mediosPago != ""){
-            foreach ($mediosPago as $o)
-            {
-                $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
-            }
-        }
 
     $xmlString .= '
     <DetalleServicio>';
@@ -1134,6 +1095,13 @@ function genXMLNC()
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
+    if ( isset($mediosPago) && $mediosPago != ""){
+        foreach ($mediosPago as $o)
+        {
+            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+        }
+    }
+
     $xmlString .= '
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
@@ -1201,7 +1169,8 @@ function genXMLND()
     // Datos contribuyente
     $clave                          = params_get("clave");
     $proveedorSistemas              = params_get("proveedor_sistemas");
-    $codigoActividad                = params_get("codigo_actividad");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadEmisor          = params_get("codigo_actividad_emisor");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadReceptor        = params_get("codigo_actividad_receptor");
     $consecutivo                    = params_get("consecutivo");
     $fechaEmision                   = params_get("fecha_emision");
 
@@ -1217,9 +1186,8 @@ function genXMLND()
     $emisorOtrasSenas               = params_get("emisor_otras_senas");
     $emisorCodPaisTel               = params_get("emisor_cod_pais_tel");
     $emisorTel                      = params_get("emisor_tel");
-    $emisorCodPaisFax               = params_get("emisor_cod_pais_fax");
-    $emisorFax                      = params_get("emisor_fax");
     $emisorEmail                    = params_get("emisor_email");
+    $registroFiscal8707             = params_get("registrofiscal8707");
 
     // Datos receptor
     $omitir_receptor                = params_get("omitir_receptor");        // Deprecated
@@ -1236,12 +1204,11 @@ function genXMLND()
     $receptorOtrasSenasExtranjero   = params_get("receptor_otras_senas_extranjero");
     $receptorCodPaisTel             = params_get("receptor_cod_pais_tel");
     $receptorTel                    = params_get("receptor_tel");
-    $receptorCodPaisFax             = params_get("receptor_cod_pais_fax");
-    $receptorFax                    = params_get("receptor_fax");
     $receptorEmail                  = params_get("receptor_email");
 
     // Detalles de tiquete / Factura
     $condVenta                      = params_get("condicion_venta");
+    $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
     $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
@@ -1282,9 +1249,9 @@ function genXMLND()
         grace_debug(params_get("medios_pago"));
 
     // Validate string sizes
-    $codigoActividad = str_pad($codigoActividad, 6, "0", STR_PAD_LEFT);
-    if (strlen($codigoActividad) != CODIGOACTIVIDADSIZE)
-        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividad is ".$codigoActividad);
+    $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
+    if (strlen($codigoActividadEmisor) != CODIGOACTIVIDADSIZE)
+        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadEmisor is ".$codigoActividadEmisor);
 
     if (strlen($emisorNombre) > EMISORNOMBREMAXSIZE)
         error_log("emisorNombreSize: ".EMISORNOMBREMAXSIZE." is greater than emisorNombre: ".$emisorNombre);
@@ -1292,8 +1259,8 @@ function genXMLND()
     if (strlen($receptorNombre) > RECEPTORNOMBREMAXSIZE)
         error_log("receptorNombreMaxSize: ".RECEPTORNOMBREMAXSIZE." is greater than receptorNombre: ".$receptorNombre);
 
-    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASEXTRANJEROMAXSIZE)
-        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASEXTRANJEROMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
+    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASMAXSIZE)
+        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
 
     if ( isset($otrosCargos) && $otrosCargos != "")
         if (count($otrosCargos) > 15){
@@ -1316,7 +1283,19 @@ function genXMLND()
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Clave>' . $clave . '</Clave>
     <ProveedorSistemas>' . $proveedorSistemas . '</ProveedorSistemas>
-    <CodigoActividad>' . $codigoActividad . '</CodigoActividad>
+    <CodigoActividadEmisor>' . $codigoActividadEmisor . '</CodigoActividadEmisor>';
+
+    if ( isset($codigoActividadReceptor) && $codigoActividadReceptor != "")
+    {
+        $codigoActividadReceptor = str_pad($codigoActividadReceptor, 6, "0", STR_PAD_LEFT);
+        if (strlen($codigoActividadReceptor) != CODIGOACTIVIDADSIZE)
+            error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadReceptor is ".$codigoActividadReceptor);
+
+        $xmlString .= '
+        <CodigoActividadReceptor>' . $codigoActividadReceptor . '</CodigoActividadReceptor>';
+    }
+
+    $xmlString .= '
     <NumeroConsecutivo>' . $consecutivo . '</NumeroConsecutivo>
     <FechaEmision>' . $fechaEmision . '</FechaEmision>
     <Emisor>
@@ -1325,6 +1304,11 @@ function genXMLND()
             <Tipo>' . $emisorTipoIdentif . '</Tipo>
             <Numero>' . $emisorNumIdentif . '</Numero>
         </Identificacion>';
+
+    if ( isset($registroFiscal8707) && $registroFiscal8707 != "")
+        $xmlString .= '
+        <Registrofiscal8707>' . $registroFiscal8707 . '</Registrofiscal8707>';
+
     if ( isset($emisorNombreComercial) && $emisorNombreComercial != "")
         $xmlString .= '
         <NombreComercial>' . $emisorNombreComercial . '</NombreComercial>';
@@ -1343,7 +1327,7 @@ function genXMLND()
             </Ubicacion>';
     }
 
-    if ($emisorCodPaisTel != '' && $emisorTel != '')
+    if ($emisorCodPaisTel != '' && $emisorTel != '' && $emisorTel >= EMISORNUMEROTELMIN && $emisorTel <= EMISORNUMEROTELMAX)
     {
         $xmlString .= '
         <Telefono>
@@ -1352,40 +1336,17 @@ function genXMLND()
         </Telefono>';
     }
 
-    if ($emisorCodPaisFax != '' && $emisorFax != '')
-    {
-        $xmlString .= '
-        <Fax>
-            <CodigoPais>' . $emisorCodPaisFax . '</CodigoPais>
-            <NumTelefono>' . $emisorFax . '</NumTelefono>
-        </Fax>';
+    if (preg_match(EMAIL_REGEX, trim($emisorEmail))) {
+        $xmlString .= '<CorreoElectronico>' . trim($emisorEmail) . '</CorreoElectronico></Emisor>';
+    } else {
+        error_log(sprintf("Invalid email format: '%s' does not meet the regex pattern: %s", $emisorEmail, EMAIL_REGEX));
     }
-
-    $xmlString .= '<CorreoElectronico>' . $emisorEmail . '</CorreoElectronico>
-    </Emisor>';
 
     if ($omitir_receptor != 'true')
     {
         $xmlString .= '<Receptor>
             <Nombre>' . $receptorNombre . '</Nombre>';
 
-        /*if ($receptorTipoIdentif == '05')
-        {
-            if ($receptorTipoIdentif != '' &&  $receptorNumIdentif != '')
-            {
-                $xmlString .= '<IdentificacionExtranjero>'
-                        . $receptorNumIdentif
-                        . ' </IdentificacionExtranjero>';
-            }
-            if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300)
-            {
-                $xmlString .= '<OtrasSenasExtranjero>'
-                        . $receptorOtrasSenasExtranjero
-                        . ' </OtrasSenasExtranjero>';
-            }
-        }
-        else
-        {*/
         if ($receptorTipoIdentif != '' && $receptorNumIdentif != '')
         {
             $xmlString .= '<Identificacion>
@@ -1420,7 +1381,7 @@ function genXMLND()
                 </Ubicacion>';
         }
 
-        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300){
+        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= RECEPTOROTRASSENASEXTRANJEROMAXSIZE){
             $xmlString .= '
             <OtrasSenasExtranjero>'
                 .$receptorOtrasSenasExtranjero.
@@ -1436,15 +1397,6 @@ function genXMLND()
             </Telefono>';
         }
 
-        if ($receptorCodPaisFax != '' && $receptorFax != '')
-        {
-            $xmlString .= '
-            <Fax>
-                <CodigoPais>' . $receptorCodPaisFax . '</CodigoPais>
-                <NumTelefono>' . $receptorFax . '</NumTelefono>
-            </Fax>';
-        }
-
         if ($receptorEmail != '')
             $xmlString .= '<CorreoElectronico>' . $receptorEmail . '</CorreoElectronico>';
 
@@ -1454,21 +1406,14 @@ function genXMLND()
     $xmlString .= '
     <CondicionVenta>' . $condVenta . '</CondicionVenta>';
 
+    if ( isset($condVentaOtros) && $condVentaOtros != "" ){
+        $xmlString .= '
+        <CondicionVentaOtros>' . $condVentaOtros . '</CondicionVentaOtros>';
+    }
+
     if ( isset($plazoCredito) && $plazoCredito != "" )
     $xmlString .= '
         <PlazoCredito>' . $plazoCredito . '</PlazoCredito>';
-
-    if ( isset($medioPago) && $medioPago != "" && $medioPago != 0 )
-    $xmlString .= '
-        <MedioPago>' . $medioPago . '</MedioPago>';
-    else
-        //mediosPago 4 nodos nada más
-        if ( isset($mediosPago) && $mediosPago != ""){
-            foreach ($mediosPago as $o)
-            {
-                $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
-            }
-        }
 
     $xmlString .= '
     <DetalleServicio>';
@@ -1713,6 +1658,13 @@ function genXMLND()
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
+    if ( isset($mediosPago) && $mediosPago != ""){
+        foreach ($mediosPago as $o)
+        {
+            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+        }
+    }
+
     $xmlString .= '
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
@@ -1781,7 +1733,7 @@ function genXMLTE()
     // Datos contribuyente
     $clave                          = params_get("clave");
     $proveedorSistemas              = params_get("proveedor_sistemas");
-    $codigoActividad                = params_get("codigo_actividad");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadEmisor          = params_get("codigo_actividad_emisor");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
     $consecutivo                    = params_get("consecutivo");
     $fechaEmision                   = params_get("fecha_emision");
 
@@ -1797,9 +1749,8 @@ function genXMLTE()
     $emisorOtrasSenas               = params_get("emisor_otras_senas");
     $emisorCodPaisTel               = params_get("emisor_cod_pais_tel");
     $emisorTel                      = params_get("emisor_tel");
-    $emisorCodPaisFax               = params_get("emisor_cod_pais_fax");
-    $emisorFax                      = params_get("emisor_fax");
     $emisorEmail                    = params_get("emisor_email");
+    $registroFiscal8707             = params_get("registrofiscal8707");
 
     // Datos receptor
     $omitir_receptor                = params_get("omitir_receptor");        // Deprecated
@@ -1816,12 +1767,11 @@ function genXMLTE()
     $receptorOtrasSenasExtranjero   = params_get("receptor_otras_senas_extranjero");
     $receptorCodPaisTel             = params_get("receptor_cod_pais_tel");
     $receptorTel                    = params_get("receptor_tel");
-    $receptorCodPaisFax             = params_get("receptor_cod_pais_fax");
-    $receptorFax                    = params_get("receptor_fax");
     $receptorEmail                  = params_get("receptor_email");
 
     // Detalles de tiquete / Factura
     $condVenta                      = params_get("condicion_venta");
+    $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
     $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
@@ -1864,9 +1814,9 @@ function genXMLTE()
         grace_debug(params_get("medios_pago"));
 
     // Validate string sizes
-    $codigoActividad = str_pad($codigoActividad, 6, "0", STR_PAD_LEFT);
-    if (strlen($codigoActividad) != CODIGOACTIVIDADSIZE)
-        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividad is ".$codigoActividad);
+    $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
+    if (strlen($codigoActividadEmisor) != CODIGOACTIVIDADSIZE)
+        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadEmisor is ".$codigoActividadEmisor);
 
     if (strlen($emisorNombre) > EMISORNOMBREMAXSIZE)
         error_log("emisorNombreSize: ".EMISORNOMBREMAXSIZE." is greater than emisorNombre: ".$emisorNombre);
@@ -1874,8 +1824,8 @@ function genXMLTE()
     if (strlen($receptorNombre) > RECEPTORNOMBREMAXSIZE)
         error_log("receptorNombreMaxSize: ".RECEPTORNOMBREMAXSIZE." is greater than receptorNombre: ".$receptorNombre);
 
-    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASEXTRANJEROMAXSIZE)
-        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASEXTRANJEROMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
+    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASMAXSIZE)
+        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
 
     if ( isset($otrosCargos) && $otrosCargos != "")
         if (count($otrosCargos) > 15){
@@ -1898,7 +1848,7 @@ function genXMLTE()
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Clave>' . $clave . '</Clave>
     <ProveedorSistemas>' . $proveedorSistemas . '</ProveedorSistemas>
-    <CodigoActividad>' . $codigoActividad . '</CodigoActividad>
+    <CodigoActividadEmisor>' . $codigoActividadEmisor . '</CodigoActividadEmisor>
     <NumeroConsecutivo>' . $consecutivo . '</NumeroConsecutivo>
     <FechaEmision>' . $fechaEmision . '</FechaEmision>
     <Emisor>
@@ -1907,6 +1857,11 @@ function genXMLTE()
             <Tipo>' . $emisorTipoIdentif . '</Tipo>
             <Numero>' . $emisorNumIdentif . '</Numero>
         </Identificacion>';
+
+    if ( isset($registroFiscal8707) && $registroFiscal8707 != "")
+        $xmlString .= '
+        <Registrofiscal8707>' . $registroFiscal8707 . '</Registrofiscal8707>';
+
     if ( isset($emisorNombreComercial) && $emisorNombreComercial != "")
         $xmlString .= '
         <NombreComercial>' . $emisorNombreComercial . '</NombreComercial>';
@@ -1925,7 +1880,7 @@ function genXMLTE()
             </Ubicacion>';
     }
 
-    if ($emisorCodPaisTel != '' && $emisorTel != '')
+    if ($emisorCodPaisTel != '' && $emisorTel != '' && $emisorTel >= EMISORNUMEROTELMIN && $emisorTel <= EMISORNUMEROTELMAX)
     {
         $xmlString .= '
         <Telefono>
@@ -1934,17 +1889,11 @@ function genXMLTE()
         </Telefono>';
     }
 
-    if ($emisorCodPaisFax != '' && $emisorFax != '')
-    {
-        $xmlString .= '
-        <Fax>
-            <CodigoPais>' . $emisorCodPaisFax . '</CodigoPais>
-            <NumTelefono>' . $emisorFax . '</NumTelefono>
-        </Fax>';
+    if (preg_match(EMAIL_REGEX, trim($emisorEmail))) {
+        $xmlString .= '<CorreoElectronico>' . trim($emisorEmail) . '</CorreoElectronico></Emisor>';
+    } else {
+        error_log(sprintf("Invalid email format: '%s' does not meet the regex pattern: %s", $emisorEmail, EMAIL_REGEX));
     }
-
-    $xmlString .= '<CorreoElectronico>' . $emisorEmail . '</CorreoElectronico>
-    </Emisor>';
 
     if ($omitir_receptor != 'true')
     {
@@ -1987,7 +1936,7 @@ function genXMLTE()
                 </Ubicacion>';
         }
 
-        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300){
+        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= RECEPTOROTRASSENASEXTRANJEROMAXSIZE){
             $xmlString .= '
             <OtrasSenasExtranjero>'
                 .$receptorOtrasSenasExtranjero.
@@ -2003,15 +1952,6 @@ function genXMLTE()
             </Telefono>';
         }
 
-        if ($receptorCodPaisFax != '' && $receptorFax != '')
-        {
-            $xmlString .= '
-            <Fax>
-                <CodigoPais>' . $receptorCodPaisFax . '</CodigoPais>
-                <NumTelefono>' . $receptorFax . '</NumTelefono>
-            </Fax>';
-        }
-
         if ($receptorEmail != '')
             $xmlString .= '<CorreoElectronico>' . $receptorEmail . '</CorreoElectronico>';
 
@@ -2021,21 +1961,14 @@ function genXMLTE()
     $xmlString .= '
     <CondicionVenta>' . $condVenta . '</CondicionVenta>';
 
+    if ( isset($condVentaOtros) && $condVentaOtros != "" ){
+        $xmlString .= '
+        <CondicionVentaOtros>' . $condVentaOtros . '</CondicionVentaOtros>';
+    }
+
     if ( isset($plazoCredito) && $plazoCredito != "" )
     $xmlString .= '
         <PlazoCredito>' . $plazoCredito . '</PlazoCredito>';
-
-    if ( isset($medioPago) && $medioPago != "" && $medioPago != 0 )
-    $xmlString .= '
-        <MedioPago>' . $medioPago . '</MedioPago>';
-    else
-        //mediosPago 4 nodos nada más
-        if ( isset($mediosPago) && $mediosPago != ""){
-            foreach ($mediosPago as $o)
-            {
-                $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
-            }
-        }
 
     $xmlString .='<DetalleServicio>';
 
@@ -2284,6 +2217,13 @@ function genXMLTE()
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
+    if ( isset($mediosPago) && $mediosPago != ""){
+        foreach ($mediosPago as $o)
+        {
+            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+        }
+    }
+
     $xmlString .= '
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
@@ -2407,7 +2347,8 @@ function genXMLFec()
     // Datos contribuyente
     $clave                          = params_get("clave");
     $proveedorSistemas              = params_get("proveedor_sistemas");
-    $codigoActividad                = params_get("codigo_actividad");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadEmisor          = params_get("codigo_actividad_emisor");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadReceptor        = params_get("codigo_actividad_receptor");
     $consecutivo                    = params_get("consecutivo");
     $fechaEmision                   = params_get("fecha_emision");
 
@@ -2421,11 +2362,11 @@ function genXMLFec()
     $emisorDistrito                 = params_get("emisor_distrito");
     $emisorBarrio                   = params_get("emisor_barrio");
     $emisorOtrasSenas               = params_get("emisor_otras_senas");
+    $emisorOtrasSenasExtranjero     = params_get("emisor_otras_senas_extranjero");
     $emisorCodPaisTel               = params_get("emisor_cod_pais_tel");
     $emisorTel                      = params_get("emisor_tel");
-    $emisorCodPaisFax               = params_get("emisor_cod_pais_fax");
-    $emisorFax                      = params_get("emisor_fax");
     $emisorEmail                    = params_get("emisor_email");
+    $registroFiscal8707             = params_get("registrofiscal8707");
 
     // Datos receptor
     $omitir_receptor                = params_get("omitir_receptor");        // Deprecated
@@ -2439,15 +2380,13 @@ function genXMLFec()
     $receptorDistrito               = params_get("receptor_distrito");
     $receptorBarrio                 = params_get("receptor_barrio");
     $receptorOtrasSenas             = params_get("receptor_otras_senas");
-    $receptorOtrasSenasExtranjero   = params_get("receptor_otras_senas_extranjero");
     $receptorCodPaisTel             = params_get("receptor_cod_pais_tel");
     $receptorTel                    = params_get("receptor_tel");
-    $receptorCodPaisFax             = params_get("receptor_cod_pais_fax");
-    $receptorFax                    = params_get("receptor_fax");
     $receptorEmail                  = params_get("receptor_email");
 
     // Detalles de tiquete / Factura
     $condVenta                      = params_get("condicion_venta");
+    $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
     $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
@@ -2489,9 +2428,13 @@ function genXMLFec()
         grace_debug(params_get("medios_pago"));
 
     // Validate string sizes
-    $codigoActividad = str_pad($codigoActividad, 6, "0", STR_PAD_LEFT);
-    if (strlen($codigoActividad) != CODIGOACTIVIDADSIZE)
-        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividad is ".$codigoActividad);
+    $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
+    if (strlen($codigoActividadEmisor) != CODIGOACTIVIDADSIZE)
+        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadEmisor is ".$codigoActividadEmisor);
+
+    $codigoActividadReceptor = str_pad($codigoActividadReceptor, 6, "0", STR_PAD_LEFT);
+    if (strlen($codigoActividadReceptor) != CODIGOACTIVIDADSIZE)
+        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadReceptor is ".$codigoActividadReceptor);
 
     if (strlen($emisorNombre) > EMISORNOMBREMAXSIZE)
         error_log("emisorNombreSize: ".EMISORNOMBREMAXSIZE." is greater than emisorNombre: ".$emisorNombre);
@@ -2499,8 +2442,8 @@ function genXMLFec()
     if (strlen($receptorNombre) > RECEPTORNOMBREMAXSIZE)
         error_log("receptorNombreMaxSize: ".RECEPTORNOMBREMAXSIZE." is greater than receptorNombre: ".$receptorNombre);
 
-    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASEXTRANJEROMAXSIZE)
-        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASEXTRANJEROMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
+    if (strlen($receptorOtrasSenas) > RECEPTOROTRASSENASMAXSIZE)
+        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenas);
 
     if ( isset($otrosCargos) && $otrosCargos != "")
         if (count($otrosCargos) > 15){
@@ -2523,7 +2466,8 @@ function genXMLFec()
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         <Clave>' . $clave . '</Clave>
         <ProveedorSistemas>' . $proveedorSistemas . '</ProveedorSistemas>
-        <CodigoActividad>' . $codigoActividad . '</CodigoActividad>
+        <CodigoActividadEmisor>' . $codigoActividadEmisor . '</CodigoActividadEmisor>
+        <CodigoActividadReceptor>' . $codigoActividadReceptor . '</CodigoActividadReceptor>
         <NumeroConsecutivo>' . $consecutivo . '</NumeroConsecutivo>
         <FechaEmision>' . $fechaEmision . '</FechaEmision>
         <Emisor>
@@ -2532,6 +2476,11 @@ function genXMLFec()
                 <Tipo>' . $emisorTipoIdentif . '</Tipo>
                 <Numero>' . $emisorNumIdentif . '</Numero>
             </Identificacion>';
+
+    if ( isset($registroFiscal8707) && $registroFiscal8707 != "")
+        $xmlString .= '
+        <Registrofiscal8707>' . $registroFiscal8707 . '</Registrofiscal8707>';
+
     if ( isset($emisorNombreComercial) && $emisorNombreComercial != "")
         $xmlString .= '
         <NombreComercial>' . $emisorNombreComercial . '</NombreComercial>';
@@ -2547,10 +2496,16 @@ function genXMLFec()
             $xmlString .= '<Barrio>' . $emisorBarrio . '</Barrio>';
         $xmlString .= '
                 <OtrasSenas>' . $emisorOtrasSenas . '</OtrasSenas>
-            </Ubicacion>';
+         </Ubicacion>';
     }
 
-    if ($emisorCodPaisTel != '' && $emisorTel != '')
+    if ($emisorOtrasSenasExtranjero != ''  && strlen($emisorOtrasSenasExtranjero) <= RECEPTOROTRASSENASEXTRANJEROMAXSIZE)
+    {
+        $xmlString .= '
+        <OtrasSenasExtranjero>' . $emisorOtrasSenasExtranjero . '</OtrasSenasExtranjero>';
+    }
+
+    if ($emisorCodPaisTel != '' && $emisorTel != '' && $emisorTel >= EMISORNUMEROTELMIN && $emisorTel <= EMISORNUMEROTELMAX)
     {
         $xmlString .= '
             <Telefono>
@@ -2559,41 +2514,16 @@ function genXMLFec()
             </Telefono>';
     }
 
-    if ($emisorCodPaisFax != '' && $emisorFax != '')
-    {
-        $xmlString .= '
-            <Fax>
-                <CodigoPais>' . $emisorCodPaisFax . '</CodigoPais>
-                <NumTelefono>' . $emisorFax . '</NumTelefono>
-            </Fax>';
+    if ($emisorEmail != '' && preg_match(EMAIL_REGEX, trim($emisorEmail))) {
+        $xmlString .= '<CorreoElectronico>' . trim($emisorEmail) . '</CorreoElectronico></Emisor>';
+    } else {
+        error_log(sprintf("Invalid email format: '%s' does not meet the regex pattern: %s", $emisorEmail, EMAIL_REGEX));
     }
-
-    $xmlString .= '<CorreoElectronico>' . $emisorEmail . '</CorreoElectronico>
-        </Emisor>';
 
   
     $xmlString .= '<Receptor>
         <Nombre>' . $receptorNombre . '</Nombre>';
 
-    /*if ($receptorTipoIdentif == '05')
-    {
-        if ($receptorTipoIdentif != '' &&  $receptorNumIdentif != '')
-        {
-            $xmlString .= '<IdentificacionExtranjero>'
-                    . $receptorNumIdentif
-                    . ' </IdentificacionExtranjero>';
-        }
-        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300)
-        {
-            $xmlString .= '<OtrasSenasExtranjero>'
-                    . $receptorOtrasSenasExtranjero
-                    . ' </OtrasSenasExtranjero>';
-        }
-    }
-    else
-    {*/
-        /*if ($receptorTipoIdentif != '' &&  $receptorNumIdentif != '')
-        {*/
         $xmlString .= '
         <Identificacion>
             <Tipo>' . $receptorTipoIdentif . '</Tipo>
@@ -2608,10 +2538,10 @@ function genXMLFec()
             '</IdentificacionExtranjero>';
         }
 
-        if ( isset($receptorNombreComercial) && $receptorNombreComercial != "")
-        $xmlString .= '
+        if ( isset($receptorNombreComercial) && $receptorNombreComercial != "") {
+            $xmlString .= '
         <NombreComercial>' . $receptorNombreComercial . '</NombreComercial>';
-        //}
+        }
 
         if ($receptorProvincia != '' && $receptorCanton != '' && $receptorDistrito != '' && $receptorOtrasSenas != '')
         {
@@ -2627,14 +2557,6 @@ function genXMLFec()
             </Ubicacion>';
         }
 
-        if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300){
-            $xmlString .= '
-            <OtrasSenasExtranjero>'
-                .$receptorOtrasSenasExtranjero.
-            '</OtrasSenasExtranjero>';
-        }
-    /*}*/
-
     if ($receptorCodPaisTel != '' && $receptorTel != '')
     {
         $xmlString .= '
@@ -2642,15 +2564,6 @@ function genXMLFec()
                 <CodigoPais>' . $receptorCodPaisTel . '</CodigoPais>
                 <NumTelefono>' . $receptorTel . '</NumTelefono>
             </Telefono>';
-    }
-
-    if ($receptorCodPaisFax != '' && $receptorFax != '')
-    {
-        $xmlString .= '
-            <Fax>
-                <CodigoPais>' . $receptorCodPaisFax . '</CodigoPais>
-                <NumTelefono>' . $receptorFax . '</NumTelefono>
-            </Fax>';
     }
 
     if ($receptorEmail != '')
@@ -2661,21 +2574,14 @@ function genXMLFec()
     $xmlString .= '
         <CondicionVenta>' . $condVenta . '</CondicionVenta>';
 
+    if ( isset($condVentaOtros) && $condVentaOtros != "" ){
+        $xmlString .= '
+        <CondicionVentaOtros>' . $condVentaOtros . '</CondicionVentaOtros>';
+    }
+
     if ( isset($plazoCredito) && $plazoCredito != "" )
     $xmlString .= '
         <PlazoCredito>' . $plazoCredito . '</PlazoCredito>';
-
-    if ( isset($medioPago) && $medioPago != "" && $medioPago != 0 )
-    $xmlString .= '
-        <MedioPago>' . $medioPago . '</MedioPago>';
-    else
-        //mediosPago 4 nodos nada más
-        if ( isset($mediosPago) && $mediosPago != ""){
-            foreach ($mediosPago as $o)
-            {
-                $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
-            }
-        }
 
     $xmlString .= '
         <DetalleServicio>';
@@ -2913,6 +2819,13 @@ function genXMLFec()
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
+    if ( isset($mediosPago) && $mediosPago != ""){
+        foreach ($mediosPago as $o)
+        {
+            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+        }
+    }
+
     $xmlString .= '
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
@@ -2982,9 +2895,10 @@ function genXMLFee()
 {
     $clave                          = params_get("clave");
     $proveedorSistemas              = params_get("proveedor_sistemas");
-    $codigoActividad                = params_get("codigo_actividad");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
+    $codigoActividadEmisor          = params_get("codigo_actividad_emisor");        // https://cloud-cube.s3.amazonaws.com/sp5z9nxkd1ra/public/assets/json/actividades_por_codigo.json
     $consecutivo                    = params_get("consecutivo");
     $fechaEmision                   = params_get("fecha_emision");
+
     $emisorNombre                   = params_get("emisor_nombre");
     $emisorTipoIdentif              = params_get("emisor_tipo_identif");
     $emisorNumIdentif               = params_get("emisor_num_identif");
@@ -2996,9 +2910,9 @@ function genXMLFee()
     $emisorOtrasSenas               = params_get("emisor_otras_senas");
     $emisorCodPaisTel               = params_get("emisor_cod_pais_tel");
     $emisorTel                      = params_get("emisor_tel");
-    $emisorCodPaisFax               = params_get("emisor_cod_pais_fax");
-    $emisorFax                      = params_get("emisor_fax");
     $emisorEmail                    = params_get("emisor_email");
+    $registroFiscal8707             = params_get("registrofiscal8707");
+
     $receptorNombre                 = params_get("receptor_nombre");
     $receptorTipoIdentif            = params_get("receptor_tipo_identif");
     $receptorNumIdentif             = params_get("receptor_num_identif");
@@ -3007,16 +2921,17 @@ function genXMLFee()
     $receptorOtrasSenasExtranjero   = params_get("receptor_otras_senas_extranjero");
     $receptorCodPaisTel             = params_get("receptor_cod_pais_tel");
     $receptorTel                    = params_get("receptor_tel");
-    $receptorCodPaisFax             = params_get("receptor_cod_pais_fax");
-    $receptorFax                    = params_get("receptor_fax");
     $receptorEmail                  = params_get("receptor_email");
+
     $condVenta                      = params_get("condicion_venta");
+    $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
     $medioPago                      = json_decode(params_get("medio_pago"));
     $detalles                       = json_decode(params_get("detalles"));
     $otrosCargos                    = json_decode(params_get("otrosCargos"));
     $codMoneda                      = params_get("cod_moneda");
     $tipoCambio                     = params_get("tipo_cambio");
+
     $totalServGravados              = params_get("total_serv_gravados");
     $totalServExentos               = params_get("total_serv_exentos");
     $totalMercGravadas              = params_get("total_merc_gravada");
@@ -3029,6 +2944,7 @@ function genXMLFee()
     $totalImp                       = params_get("total_impuestos");
     $totalOtrosCargos               = params_get("totalOtrosCargos");
     $totalComprobante               = params_get("total_comprobante");
+    
     $informacionReferencia          = json_decode(params_get("informacionReferencia"));
     $otros                          = json_decode(params_get("otros"));
 
@@ -3041,9 +2957,9 @@ function genXMLFee()
         grace_debug(params_get("medio_pago"));
 
     // Validate string sizes
-    $codigoActividad = str_pad($codigoActividad, 6, "0", STR_PAD_LEFT);
-    if (strlen($codigoActividad) != CODIGOACTIVIDADSIZE)
-        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividad is ".$codigoActividad);
+    $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
+    if (strlen($codigoActividadEmisor) != CODIGOACTIVIDADSIZE)
+        error_log("codigoActividadSize is: ".CODIGOACTIVIDADSIZE." and codigoActividadEmisor is ".$codigoActividadEmisor);
 
     if (strlen($emisorNombre) > EMISORNOMBREMAXSIZE)
         error_log("emisorNombreSize: ".EMISORNOMBREMAXSIZE." is greater than emisorNombre: ".$emisorNombre);
@@ -3051,8 +2967,8 @@ function genXMLFee()
     if (strlen($receptorNombre) > RECEPTORNOMBREMAXSIZE)
         error_log("receptorNombreMaxSize: ".RECEPTORNOMBREMAXSIZE." is greater than receptorNombre: ".$receptorNombre);
 
-    if (strlen($receptorOtrasSenasExtranjero) > RECEPTOROTRASSENASEXTRANJEROMAXSIZE)
-        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASEXTRANJEROMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenasExtranjero);
+    if (strlen($receptorOtrasSenasExtranjero) > RECEPTOROTRASSENASMAXSIZE)
+        error_log("RECEPTOROTRASSENASEXTRANJEROMAXSIZE: ".RECEPTOROTRASSENASMAXSIZE." is greater than receptorOtrasSenas: ".$receptorOtrasSenasExtranjero);
 
     if ( isset($otrosCargos) && !empty($otrosCargos))
         if (count($otrosCargos->otrosCargos) > 15){
@@ -3075,7 +2991,7 @@ function genXMLFee()
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         <Clave>' . $clave . '</Clave>
         <ProveedorSistemas>' . $proveedorSistemas . '</ProveedorSistemas>
-        <CodigoActividad>' . $codigoActividad . '</CodigoActividad>
+        <CodigoActividadEmisor>' . $codigoActividadEmisor . '</CodigoActividadEmisor>
         <NumeroConsecutivo>' . $consecutivo . '</NumeroConsecutivo>
         <FechaEmision>' . $fechaEmision . '</FechaEmision>
         <Emisor>
@@ -3084,6 +3000,11 @@ function genXMLFee()
                 <Tipo>' . $emisorTipoIdentif . '</Tipo>
                 <Numero>' . $emisorNumIdentif . '</Numero>
             </Identificacion>';
+
+    if ( isset($registroFiscal8707) && $registroFiscal8707 != "")
+        $xmlString .= '
+        <Registrofiscal8707>' . $registroFiscal8707 . '</Registrofiscal8707>';
+
     if ( isset($emisorNombreComercial) && $emisorNombreComercial != "")
         $xmlString .= '
         <NombreComercial>' . $emisorNombreComercial . '</NombreComercial>';
@@ -3102,7 +3023,7 @@ function genXMLFee()
             </Ubicacion>';
     }
 
-    if ($emisorCodPaisTel != '' && $emisorTel != '')
+    if ($emisorCodPaisTel != '' && $emisorTel != '' && $emisorTel >= EMISORNUMEROTELMIN && $emisorTel <= EMISORNUMEROTELMAX)
     {
         $xmlString .= '
             <Telefono>
@@ -3111,17 +3032,11 @@ function genXMLFee()
             </Telefono>';
     }
 
-    if ($emisorCodPaisFax != '' && $emisorFax != '')
-    {
-        $xmlString .= '
-            <Fax>
-                <CodigoPais>' . $emisorCodPaisFax . '</CodigoPais>
-                <NumTelefono>' . $emisorFax . '</NumTelefono>
-            </Fax>';
+    if (preg_match(EMAIL_REGEX, trim($emisorEmail))) {
+        $xmlString .= '<CorreoElectronico>' . trim($emisorEmail) . '</CorreoElectronico></Emisor>';
+    } else {
+        error_log(sprintf("Invalid email format: '%s' does not meet the regex pattern: %s", $emisorEmail, EMAIL_REGEX));
     }
-
-    $xmlString .= '<CorreoElectronico>' . $emisorEmail . '</CorreoElectronico>
-        </Emisor>';
 
     if (isset($receptorNombre) && $receptorNombre != "") {
         $xmlString .= '<Receptor>
@@ -3163,7 +3078,7 @@ function genXMLFee()
         </Ubicacion>';
     }
 
-    if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= 300){
+    if ($receptorOtrasSenasExtranjero != '' && strlen($receptorOtrasSenasExtranjero) <= RECEPTOROTRASSENASEXTRANJEROMAXSIZE){
         $xmlString .= '
         <OtrasSenasExtranjero>'
             .$receptorOtrasSenasExtranjero.
@@ -3180,48 +3095,22 @@ function genXMLFee()
             </Telefono>';
     }
 
-    if ($receptorCodPaisFax != '' && $receptorFax != '')
-    {
-        $xmlString .= '
-            <Fax>
-                <CodigoPais>' . $receptorCodPaisFax . '</CodigoPais>
-                <NumTelefono>' . $receptorFax . '</NumTelefono>
-            </Fax>';
-    }
-
     if ($receptorEmail != '') {
         $xmlString .= '<CorreoElectronico>' . $receptorEmail . '</CorreoElectronico>';
         $xmlString .= '</Receptor>';
     }
 
-
     $xmlString .= '
         <CondicionVenta>' . $condVenta . '</CondicionVenta>';
+
+    if ( isset($condVentaOtros) && $condVentaOtros != "" ){
+        $xmlString .= '
+        <CondicionVentaOtros>' . $condVentaOtros . '</CondicionVentaOtros>';
+    }
 
     if ( isset($plazoCredito) && $plazoCredito != "" )
     $xmlString .= '
         <PlazoCredito>' . $plazoCredito . '</PlazoCredito>';
-
-    // JSON DE EJEMPLO
-    // {
-    //     "medioPago": [
-    //         "01",
-    //         "02",
-    //         "03"
-    //     ]
-    // }
-
-    if (isset($medioPago) && !empty($medioPago)) {
-        // Iteramos sobre los elementos de otroContenido
-        foreach ($medioPago->medioPago as $c) {
-            $xmlString .= '<MedioPago>' . $c . '</MedioPago>';
-        }
-    }
-
-    // XML Resultante
-    // <MedioPago>01</MedioPago>
-	// <MedioPago>02</MedioPago>
-	// <MedioPago>03</MedioPago>
 
     $xmlString .= '
         <DetalleServicio>';
@@ -3432,6 +3321,28 @@ function genXMLFee()
     if ( isset($totalOtrosCargos) && $totalOtrosCargos != "")
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
+
+    // JSON DE EJEMPLO
+    // {
+    //     "medioPago": [
+    //         "01",
+    //         "02",
+    //         "03"
+    //     ]
+    // }
+
+    if (isset($medioPago) && !empty($medioPago)) {
+        // Iteramos sobre los elementos de otroContenido
+        foreach ($medioPago->medioPago as $c) {
+            $xmlString .= '<MedioPago>' . $c . '</MedioPago>';
+        }
+    }
+
+    // XML Resultante
+    // <MedioPago>01</MedioPago>
+    // <MedioPago>02</MedioPago>
+    // <MedioPago>03</MedioPago>
+
 
     $xmlString .= '
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>

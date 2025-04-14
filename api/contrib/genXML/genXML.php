@@ -81,25 +81,29 @@ function genXMLFe()
     $condVenta                      = params_get("condicion_venta");
     $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
-    $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
     $tipoCambio                     = params_get("tipo_cambio");
     $totalServGravados              = params_get("total_serv_gravados");
     $totalServExentos               = params_get("total_serv_exentos");
     $totalServExonerados            = params_get("total_serv_exonerados");
+    $totalServNoSujeto              = params_get("total_serv_no_sujeto");
     $totalMercGravadas              = params_get("total_merc_gravada");
     $totalMercExentas               = params_get("total_merc_exenta");
     $totalMercExonerada             = params_get("total_merc_exonerada");
+    $totalMercNoSujeta              = params_get("total_merc_no_sujeta");
     $totalGravados                  = params_get("total_gravados");
     $totalExento                    = params_get("total_exento");
     $totalExonerado                 = params_get("total_exonerado");
+    $totalNoSujeto                  = params_get("total_no_sujeto");
     $totalVentas                    = params_get("total_ventas");
     $totalDescuentos                = params_get("total_descuentos");
     $totalVentasNeta                = params_get("total_ventas_neta");
     $totalImp                       = params_get("total_impuestos");
+    $totalImpAsumidoEmisorFabrica   = params_get("total_impuestos_asumidos_fabrica");
     $totalIVADevuelto               = params_get("totalIVADevuelto");
     $totalOtrosCargos               = params_get("totalOtrosCargos");
     $totalComprobante               = params_get("total_comprobante");
+
     $otros                          = params_get("otros");
     $otrosType                      = params_get("otrosType");
     $infoRefeTipoDoc                = params_get("infoRefeTipoDoc");
@@ -113,6 +117,9 @@ function genXMLFe()
     $otrosCargos                     = json_decode(params_get("otrosCargos"));
     $mediosPago                     = json_decode(params_get("medios_pago"));
 
+    // Resumen
+    $totalDesgloseImpuesto = json_decode(params_get("totalDesgloseImpuesto"));
+
     grace_debug(params_get("detalles"));
 
     if ( isset($otrosCargos) && $otrosCargos != "")
@@ -120,6 +127,9 @@ function genXMLFe()
 
     if ( isset($mediosPago) && $mediosPago != "")
         grace_debug(params_get("medios_pago"));
+
+    if ( isset($totalDesgloseImpuesto) && $totalDesgloseImpuesto != "")
+        grace_debug(params_get("totalDesgloseImpuesto"));
 
     // Validate string sizes
     $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
@@ -343,6 +353,7 @@ function genXMLFe()
         $xmlString .= '
             <Cantidad>' . $d->cantidad . '</Cantidad>
             <UnidadMedida>' . $d->unidadMedida . '</UnidadMedida>';
+
             if (isset($c->codigo) && $c->codigo != "")
                 $xmlString .= '
                 <UnidadMedidaComercial>' . $d->unidadMedidaComercial . '</UnidadMedidaComercial>';
@@ -478,6 +489,10 @@ function genXMLFe()
         $xmlString .= '
         <TotalServExonerado>' . $totalServExonerados . '</TotalServExonerado>';
 
+    if ($totalServNoSujeto != '')
+        $xmlString .= '
+        <TotalServNoSujeto>' . $totalServNoSujeto . '</TotalServNoSujeto>';
+
     if ($totalMercGravadas != '')
         $xmlString .= '
         <TotalMercanciasGravadas>' . $totalMercGravadas . '</TotalMercanciasGravadas>';
@@ -489,6 +504,10 @@ function genXMLFe()
     if ($totalMercExonerada != '')
         $xmlString .= '
         <TotalMercExonerada>' . $totalMercExonerada . '</TotalMercExonerada>';
+
+    if ($totalMercNoSujeta != '')
+        $xmlString .= '
+        <TotalMercNoSujeta>' . $totalMercNoSujeta . '</TotalMercNoSujeta>';
 
     if ($totalGravados != '')
         $xmlString .= '
@@ -502,6 +521,10 @@ function genXMLFe()
         $xmlString .= '
         <TotalExonerado>' . $totalExonerado . '</TotalExonerado>';
 
+    if ($totalNoSujeto != '')
+        $xmlString .= '
+        <TotalNoSujeto>' . $totalNoSujeto . '</TotalNoSujeto>';
+
     $xmlString .= '
         <TotalVenta>' . $totalVentas . '</TotalVenta>';
 
@@ -512,9 +535,31 @@ function genXMLFe()
     $xmlString .= '
         <TotalVentaNeta>' . $totalVentasNeta . '</TotalVentaNeta>';
 
+    // Add logic for TotalDesgloseImpuesto
+    if (isset($totalDesgloseImpuesto) && !empty($totalDesgloseImpuesto)) {
+        foreach ($totalDesgloseImpuesto as $impuesto) {
+            $xmlString .= '
+            <TotalDesgloseImpuesto>';
+            if (isset($impuesto->Codigo)) {
+                $xmlString .= '<Codigo>' . $impuesto->Codigo . '</Codigo>';
+            }
+            if (isset($impuesto->CodigoTarifaIVA)) {
+                $xmlString .= '<CodigoTarifaIVA>' . $impuesto->CodigoTarifaIVA . '</CodigoTarifaIVA>';
+            }
+            if (isset($impuesto->TotalMontoImpuesto)) {
+                $xmlString .= '<TotalMontoImpuesto>' . $impuesto->TotalMontoImpuesto . '</TotalMontoImpuesto>';
+            }
+            $xmlString .= '</TotalDesgloseImpuesto>';
+        }
+    }
+
     if ($totalImp != '')
         $xmlString .= '
         <TotalImpuesto>' . $totalImp . '</TotalImpuesto>';
+
+    if ($totalImpAsumidoEmisorFabrica != '')
+        $xmlString .= '
+        <TotalImpAsumEmisorFabrica>' . $totalImpAsumidoEmisorFabrica . '</TotalImpAsumEmisorFabrica>';
 
     if ($totalIVADevuelto != '')
         $xmlString .= '
@@ -524,10 +569,27 @@ function genXMLFe()
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
-    if ( isset($mediosPago) && $mediosPago != ""){
-        foreach ($mediosPago as $o)
-        {
-            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+    if (isset($mediosPago) && !empty($mediosPago)) {
+        foreach ($mediosPago as $o) {
+            $xmlString .= '
+            <MedioPago>';
+
+            // Add TipoMedioPago
+            if (isset($o->tipoMedioPago) && !empty($o->tipoMedioPago)) {
+                $xmlString .= '<TipoMedioPago>' . $o->tipoMedioPago . '</TipoMedioPago>';
+            }
+
+            // Add MedioPagoOtros (only if TipoMedioPago is "99")
+            if (isset($o->tipoMedioPago) && $o->tipoMedioPago === "99" && isset($o->medioPagoOtros) && !empty($o->medioPagoOtros)) {
+                $xmlString .= '<MedioPagoOtros>' . htmlspecialchars($o->medioPagoOtros) . '</MedioPagoOtros>';
+            }
+
+            // Add TotalMedioPago
+            if (isset($o->totalMedioPago) && is_numeric($o->totalMedioPago)) {
+                $xmlString .= '<TotalMedioPago>' . number_format($o->totalMedioPago, 2, '.', '') . '</TotalMedioPago>';
+            }
+
+            $xmlString .= '</MedioPago>';
         }
     }
 
@@ -643,25 +705,29 @@ function genXMLNC()
     $condVenta                      = params_get("condicion_venta");
     $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
-    $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
     $tipoCambio                     = params_get("tipo_cambio");
     $totalServGravados              = params_get("total_serv_gravados");
     $totalServExentos               = params_get("total_serv_exentos");
     $totalServExonerados            = params_get("total_serv_exonerados");
+    $totalServNoSujeto              = params_get("total_serv_no_sujeto");
     $totalMercGravadas              = params_get("total_merc_gravada");
     $totalMercExentas               = params_get("total_merc_exenta");
     $totalMercExonerada             = params_get("total_merc_exonerada");
+    $totalMercNoSujeta              = params_get("total_merc_no_sujeta");
     $totalGravados                  = params_get("total_gravados");
     $totalExento                    = params_get("total_exento");
     $totalExonerado                 = params_get("total_exonerado");
+    $totalNoSujeto                  = params_get("total_no_sujeto");
     $totalVentas                    = params_get("total_ventas");
     $totalDescuentos                = params_get("total_descuentos");
     $totalVentasNeta                = params_get("total_ventas_neta");
     $totalImp                       = params_get("total_impuestos");
+    $totalImpAsumidoEmisorFabrica   = params_get("total_impuestos_asumidos_fabrica");
     $totalIVADevuelto               = params_get("totalIVADevuelto");
     $totalOtrosCargos               = params_get("totalOtrosCargos");
     $totalComprobante               = params_get("total_comprobante");
+
     $otros                          = params_get("otros");
     $otrosType                      = params_get("otrosType");
     $infoRefeTipoDoc                = params_get("infoRefeTipoDoc");
@@ -674,12 +740,17 @@ function genXMLNC()
     $detalles                       = json_decode(params_get("detalles"));
     $otrosCargos                     = json_decode(params_get("otrosCargos"));
     $mediosPago                     = json_decode(params_get("medios_pago"));
+    // Resumen
+    $totalDesgloseImpuesto = json_decode(params_get("totalDesgloseImpuesto"));
 
     if ( isset($otrosCargos) && $otrosCargos != "")
         grace_debug(params_get("otrosCargos"));
 
     if ( isset($mediosPago) && $mediosPago != "")
         grace_debug(params_get("medios_pago"));
+
+    if ( isset($totalDesgloseImpuesto) && $totalDesgloseImpuesto != "")
+        grace_debug(params_get("totalDesgloseImpuesto"));
 
     // Validate string sizes
     $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
@@ -1049,6 +1120,10 @@ function genXMLNC()
         $xmlString .= '
         <TotalServExonerado>' . $totalServExonerados . '</TotalServExonerado>';
 
+    if ($totalServNoSujeto != '')
+        $xmlString .= '
+        <TotalServNoSujeto>' . $totalServNoSujeto . '</TotalServNoSujeto>';
+
     if ($totalMercGravadas != '')
         $xmlString .= '
         <TotalMercanciasGravadas>' . $totalMercGravadas . '</TotalMercanciasGravadas>';
@@ -1060,6 +1135,10 @@ function genXMLNC()
     if ($totalMercExonerada != '')
         $xmlString .= '
         <TotalMercExonerada>' . $totalMercExonerada . '</TotalMercExonerada>';
+
+    if ($totalMercNoSujeta != '')
+        $xmlString .= '
+        <TotalMercNoSujeta>' . $totalMercNoSujeta . '</TotalMercNoSujeta>';
 
     if ($totalGravados != '')
         $xmlString .= '
@@ -1073,6 +1152,10 @@ function genXMLNC()
         $xmlString .= '
         <TotalExonerado>' . $totalExonerado . '</TotalExonerado>';
 
+    if ($totalNoSujeto != '')
+        $xmlString .= '
+        <TotalNoSujeto>' . $totalNoSujeto . '</TotalNoSujeto>';
+
     $xmlString .= '
         <TotalVenta>' . $totalVentas . '</TotalVenta>';
 
@@ -1083,9 +1166,31 @@ function genXMLNC()
     $xmlString .= '
         <TotalVentaNeta>' . $totalVentasNeta . '</TotalVentaNeta>';
 
+    // Add logic for TotalDesgloseImpuesto
+    if (isset($totalDesgloseImpuesto) && !empty($totalDesgloseImpuesto)) {
+        foreach ($totalDesgloseImpuesto as $impuesto) {
+            $xmlString .= '
+            <TotalDesgloseImpuesto>';
+            if (isset($impuesto->Codigo)) {
+                $xmlString .= '<Codigo>' . $impuesto->Codigo . '</Codigo>';
+            }
+            if (isset($impuesto->CodigoTarifaIVA)) {
+                $xmlString .= '<CodigoTarifaIVA>' . $impuesto->CodigoTarifaIVA . '</CodigoTarifaIVA>';
+            }
+            if (isset($impuesto->TotalMontoImpuesto)) {
+                $xmlString .= '<TotalMontoImpuesto>' . $impuesto->TotalMontoImpuesto . '</TotalMontoImpuesto>';
+            }
+            $xmlString .= '</TotalDesgloseImpuesto>';
+        }
+    }
+
     if ($totalImp != '')
         $xmlString .= '
         <TotalImpuesto>' . $totalImp . '</TotalImpuesto>';
+
+    if ($totalImpAsumidoEmisorFabrica != '')
+        $xmlString .= '
+        <TotalImpAsumEmisorFabrica>' . $totalImpAsumidoEmisorFabrica . '</TotalImpAsumEmisorFabrica>';
 
     if ($totalIVADevuelto != '')
         $xmlString .= '
@@ -1095,10 +1200,27 @@ function genXMLNC()
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
-    if ( isset($mediosPago) && $mediosPago != ""){
-        foreach ($mediosPago as $o)
-        {
-            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+    if (isset($mediosPago) && !empty($mediosPago)) {
+        foreach ($mediosPago as $o) {
+            $xmlString .= '
+            <MedioPago>';
+
+            // Add TipoMedioPago
+            if (isset($o->tipoMedioPago) && !empty($o->tipoMedioPago)) {
+                $xmlString .= '<TipoMedioPago>' . $o->tipoMedioPago . '</TipoMedioPago>';
+            }
+
+            // Add MedioPagoOtros (only if TipoMedioPago is "99")
+            if (isset($o->tipoMedioPago) && $o->tipoMedioPago === "99" && isset($o->medioPagoOtros) && !empty($o->medioPagoOtros)) {
+                $xmlString .= '<MedioPagoOtros>' . htmlspecialchars($o->medioPagoOtros) . '</MedioPagoOtros>';
+            }
+
+            // Add TotalMedioPago
+            if (isset($o->totalMedioPago) && is_numeric($o->totalMedioPago)) {
+                $xmlString .= '<TotalMedioPago>' . number_format($o->totalMedioPago, 2, '.', '') . '</TotalMedioPago>';
+            }
+
+            $xmlString .= '</MedioPago>';
         }
     }
 
@@ -1210,22 +1332,25 @@ function genXMLND()
     $condVenta                      = params_get("condicion_venta");
     $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
-    $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
     $tipoCambio                     = params_get("tipo_cambio");
     $totalServGravados              = params_get("total_serv_gravados");
     $totalServExentos               = params_get("total_serv_exentos");
     $totalServExonerados            = params_get("total_serv_exonerados");
+    $totalServNoSujeto              = params_get("total_serv_no_sujeto");
     $totalMercGravadas              = params_get("total_merc_gravada");
     $totalMercExentas               = params_get("total_merc_exenta");
     $totalMercExonerada             = params_get("total_merc_exonerada");
+    $totalMercNoSujeta              = params_get("total_merc_no_sujeta");
     $totalGravados                  = params_get("total_gravados");
     $totalExento                    = params_get("total_exento");
     $totalExonerado                 = params_get("total_exonerado");
+    $totalNoSujeto                  = params_get("total_no_sujeto");
     $totalVentas                    = params_get("total_ventas");
     $totalDescuentos                = params_get("total_descuentos");
     $totalVentasNeta                = params_get("total_ventas_neta");
     $totalImp                       = params_get("total_impuestos");
+    $totalImpAsumidoEmisorFabrica   = params_get("total_impuestos_asumidos_fabrica");
     $totalIVADevuelto               = params_get("totalIVADevuelto");
     $totalOtrosCargos               = params_get("totalOtrosCargos");
     $totalComprobante               = params_get("total_comprobante");
@@ -1241,12 +1366,17 @@ function genXMLND()
     $detalles                       = json_decode(params_get("detalles"));
     $otrosCargos                     = json_decode(params_get("otrosCargos"));
     $mediosPago                     = json_decode(params_get("medios_pago"));
+    // Resumen
+    $totalDesgloseImpuesto = json_decode(params_get("totalDesgloseImpuesto"));
 
     if ( isset($otrosCargos) && $otrosCargos != "")
         grace_debug(params_get("otrosCargos"));
 
     if ( isset($mediosPago) && $mediosPago != "")
         grace_debug(params_get("medios_pago"));
+
+    if ( isset($totalDesgloseImpuesto) && $totalDesgloseImpuesto != "")
+        grace_debug(params_get("totalDesgloseImpuesto"));
 
     // Validate string sizes
     $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
@@ -1612,6 +1742,10 @@ function genXMLND()
         $xmlString .= '
         <TotalServExonerado>' . $totalServExonerados . '</TotalServExonerado>';
 
+    if ($totalServNoSujeto != '')
+        $xmlString .= '
+        <TotalServNoSujeto>' . $totalServNoSujeto . '</TotalServNoSujeto>';
+
     if ($totalMercGravadas != '')
         $xmlString .= '
         <TotalMercanciasGravadas>' . $totalMercGravadas . '</TotalMercanciasGravadas>';
@@ -1623,6 +1757,10 @@ function genXMLND()
     if ($totalMercExonerada != '')
         $xmlString .= '
         <TotalMercExonerada>' . $totalMercExonerada . '</TotalMercExonerada>';
+
+    if ($totalMercNoSujeta != '')
+        $xmlString .= '
+        <TotalMercNoSujeta>' . $totalMercNoSujeta . '</TotalMercNoSujeta>';
 
     if ($totalGravados != '')
         $xmlString .= '
@@ -1636,6 +1774,10 @@ function genXMLND()
         $xmlString .= '
         <TotalExonerado>' . $totalExonerado . '</TotalExonerado>';
 
+    if ($totalNoSujeto != '')
+        $xmlString .= '
+        <TotalNoSujeto>' . $totalNoSujeto . '</TotalNoSujeto>';
+
     $xmlString .= '
         <TotalVenta>' . $totalVentas . '</TotalVenta>';
 
@@ -1646,9 +1788,31 @@ function genXMLND()
     $xmlString .= '
         <TotalVentaNeta>' . $totalVentasNeta . '</TotalVentaNeta>';
 
+    // Add logic for TotalDesgloseImpuesto
+    if (isset($totalDesgloseImpuesto) && !empty($totalDesgloseImpuesto)) {
+        foreach ($totalDesgloseImpuesto as $impuesto) {
+            $xmlString .= '
+            <TotalDesgloseImpuesto>';
+            if (isset($impuesto->Codigo)) {
+                $xmlString .= '<Codigo>' . $impuesto->Codigo . '</Codigo>';
+            }
+            if (isset($impuesto->CodigoTarifaIVA)) {
+                $xmlString .= '<CodigoTarifaIVA>' . $impuesto->CodigoTarifaIVA . '</CodigoTarifaIVA>';
+            }
+            if (isset($impuesto->TotalMontoImpuesto)) {
+                $xmlString .= '<TotalMontoImpuesto>' . $impuesto->TotalMontoImpuesto . '</TotalMontoImpuesto>';
+            }
+            $xmlString .= '</TotalDesgloseImpuesto>';
+        }
+    }
+
     if ($totalImp != '')
         $xmlString .= '
         <TotalImpuesto>' . $totalImp . '</TotalImpuesto>';
+
+    if ($totalImpAsumidoEmisorFabrica != '')
+        $xmlString .= '
+        <TotalImpAsumEmisorFabrica>' . $totalImpAsumidoEmisorFabrica . '</TotalImpAsumEmisorFabrica>';
 
     if ($totalIVADevuelto != '')
         $xmlString .= '
@@ -1658,10 +1822,27 @@ function genXMLND()
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
-    if ( isset($mediosPago) && $mediosPago != ""){
-        foreach ($mediosPago as $o)
-        {
-            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+    if (isset($mediosPago) && !empty($mediosPago)) {
+        foreach ($mediosPago as $o) {
+            $xmlString .= '
+            <MedioPago>';
+
+            // Add TipoMedioPago
+            if (isset($o->tipoMedioPago) && !empty($o->tipoMedioPago)) {
+                $xmlString .= '<TipoMedioPago>' . $o->tipoMedioPago . '</TipoMedioPago>';
+            }
+
+            // Add MedioPagoOtros (only if TipoMedioPago is "99")
+            if (isset($o->tipoMedioPago) && $o->tipoMedioPago === "99" && isset($o->medioPagoOtros) && !empty($o->medioPagoOtros)) {
+                $xmlString .= '<MedioPagoOtros>' . htmlspecialchars($o->medioPagoOtros) . '</MedioPagoOtros>';
+            }
+
+            // Add TotalMedioPago
+            if (isset($o->totalMedioPago) && is_numeric($o->totalMedioPago)) {
+                $xmlString .= '<TotalMedioPago>' . number_format($o->totalMedioPago, 2, '.', '') . '</TotalMedioPago>';
+            }
+
+            $xmlString .= '</MedioPago>';
         }
     }
 
@@ -1773,25 +1954,29 @@ function genXMLTE()
     $condVenta                      = params_get("condicion_venta");
     $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
-    $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
     $tipoCambio                     = params_get("tipo_cambio");
     $totalServGravados              = params_get("total_serv_gravados");
     $totalServExentos               = params_get("total_serv_exentos");
     $totalServExonerados            = params_get("total_serv_exonerados");
+    $totalServNoSujeto              = params_get("total_serv_no_sujeto");
     $totalMercGravadas              = params_get("total_merc_gravada");
     $totalMercExentas               = params_get("total_merc_exenta");
     $totalMercExonerada             = params_get("total_merc_exonerada");
+    $totalMercNoSujeta              = params_get("total_merc_no_sujeta");
     $totalGravados                  = params_get("total_gravados");
     $totalExento                    = params_get("total_exento");
     $totalExonerado                 = params_get("total_exonerado");
+    $totalNoSujeto                  = params_get("total_no_sujeto");
     $totalVentas                    = params_get("total_ventas");
     $totalDescuentos                = params_get("total_descuentos");
     $totalVentasNeta                = params_get("total_ventas_neta");
     $totalImp                       = params_get("total_impuestos");
+    $totalImpAsumidoEmisorFabrica   = params_get("total_impuestos_asumidos_fabrica");
     $totalIVADevuelto               = params_get("totalIVADevuelto");
     $totalOtrosCargos               = params_get("totalOtrosCargos");
     $totalComprobante               = params_get("total_comprobante");
+
     $otros                          = params_get("otros");
     $otrosType                      = params_get("otrosType");
     $infoRefeTipoDoc                = params_get("infoRefeTipoDoc");
@@ -1804,6 +1989,8 @@ function genXMLTE()
     $detalles                       = json_decode(params_get("detalles"));
     $otrosCargos                     = json_decode(params_get("otrosCargos"));
     $mediosPago                     = json_decode(params_get("medios_pago"));
+    // Resumen
+    $totalDesgloseImpuesto = json_decode(params_get("totalDesgloseImpuesto"));
 
     grace_debug(params_get("detalles"));
 
@@ -1812,6 +1999,9 @@ function genXMLTE()
 
     if ( isset($mediosPago) && $mediosPago != "")
         grace_debug(params_get("medios_pago"));
+
+    if ( isset($totalDesgloseImpuesto) && $totalDesgloseImpuesto != "")
+        grace_debug(params_get("totalDesgloseImpuesto"));
 
     // Validate string sizes
     $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
@@ -2171,6 +2361,10 @@ function genXMLTE()
         $xmlString .= '
         <TotalServExonerado>' . $totalServExonerados . '</TotalServExonerado>';
 
+    if ($totalServNoSujeto != '')
+        $xmlString .= '
+        <TotalServNoSujeto>' . $totalServNoSujeto . '</TotalServNoSujeto>';
+
     if ($totalMercGravadas != '')
         $xmlString .= '
         <TotalMercanciasGravadas>' . $totalMercGravadas . '</TotalMercanciasGravadas>';
@@ -2182,6 +2376,10 @@ function genXMLTE()
     if ($totalMercExonerada != '')
         $xmlString .= '
         <TotalMercExonerada>' . $totalMercExonerada . '</TotalMercExonerada>';
+
+    if ($totalMercNoSujeta != '')
+        $xmlString .= '
+        <TotalMercNoSujeta>' . $totalMercNoSujeta . '</TotalMercNoSujeta>';
 
     if ($totalGravados != '')
         $xmlString .= '
@@ -2195,6 +2393,10 @@ function genXMLTE()
         $xmlString .= '
         <TotalExonerado>' . $totalExonerado . '</TotalExonerado>';
 
+    if ($totalNoSujeto != '')
+        $xmlString .= '
+        <TotalNoSujeto>' . $totalNoSujeto . '</TotalNoSujeto>';
+
     $xmlString .= '
         <TotalVenta>' . $totalVentas . '</TotalVenta>';
 
@@ -2205,9 +2407,31 @@ function genXMLTE()
     $xmlString .= '
         <TotalVentaNeta>' . $totalVentasNeta . '</TotalVentaNeta>';
 
+    // Add logic for TotalDesgloseImpuesto
+    if (isset($totalDesgloseImpuesto) && !empty($totalDesgloseImpuesto)) {
+        foreach ($totalDesgloseImpuesto as $impuesto) {
+            $xmlString .= '
+            <TotalDesgloseImpuesto>';
+            if (isset($impuesto->Codigo)) {
+                $xmlString .= '<Codigo>' . $impuesto->Codigo . '</Codigo>';
+            }
+            if (isset($impuesto->CodigoTarifaIVA)) {
+                $xmlString .= '<CodigoTarifaIVA>' . $impuesto->CodigoTarifaIVA . '</CodigoTarifaIVA>';
+            }
+            if (isset($impuesto->TotalMontoImpuesto)) {
+                $xmlString .= '<TotalMontoImpuesto>' . $impuesto->TotalMontoImpuesto . '</TotalMontoImpuesto>';
+            }
+            $xmlString .= '</TotalDesgloseImpuesto>';
+        }
+    }
+
     if ($totalImp != '')
         $xmlString .= '
         <TotalImpuesto>' . $totalImp . '</TotalImpuesto>';
+
+    if ($totalImpAsumidoEmisorFabrica != '')
+        $xmlString .= '
+        <TotalImpAsumEmisorFabrica>' . $totalImpAsumidoEmisorFabrica . '</TotalImpAsumEmisorFabrica>';
 
     if ($totalIVADevuelto != '')
         $xmlString .= '
@@ -2217,10 +2441,27 @@ function genXMLTE()
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
-    if ( isset($mediosPago) && $mediosPago != ""){
-        foreach ($mediosPago as $o)
-        {
-            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+    if (isset($mediosPago) && !empty($mediosPago)) {
+        foreach ($mediosPago as $o) {
+            $xmlString .= '
+            <MedioPago>';
+
+            // Add TipoMedioPago
+            if (isset($o->tipoMedioPago) && !empty($o->tipoMedioPago)) {
+                $xmlString .= '<TipoMedioPago>' . $o->tipoMedioPago . '</TipoMedioPago>';
+            }
+
+            // Add MedioPagoOtros (only if TipoMedioPago is "99")
+            if (isset($o->tipoMedioPago) && $o->tipoMedioPago === "99" && isset($o->medioPagoOtros) && !empty($o->medioPagoOtros)) {
+                $xmlString .= '<MedioPagoOtros>' . htmlspecialchars($o->medioPagoOtros) . '</MedioPagoOtros>';
+            }
+
+            // Add TotalMedioPago
+            if (isset($o->totalMedioPago) && is_numeric($o->totalMedioPago)) {
+                $xmlString .= '<TotalMedioPago>' . number_format($o->totalMedioPago, 2, '.', '') . '</TotalMedioPago>';
+            }
+
+            $xmlString .= '</MedioPago>';
         }
     }
 
@@ -2388,22 +2629,26 @@ function genXMLFec()
     $condVenta                      = params_get("condicion_venta");
     $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
-    $medioPago                      = params_get("medio_pago");
     $codMoneda                      = params_get("cod_moneda");
     $tipoCambio                     = params_get("tipo_cambio");
     $totalServGravados              = params_get("total_serv_gravados");
     $totalServExentos               = params_get("total_serv_exentos");
     $totalServExonerados            = params_get("total_serv_exonerados");
+    $totalServNoSujeto              = params_get("total_serv_no_sujeto");
     $totalMercGravadas              = params_get("total_merc_gravada");
     $totalMercExentas               = params_get("total_merc_exenta");
     $totalMercExonerada             = params_get("total_merc_exonerada");
+    $totalMercNoSujeta              = params_get("total_merc_no_sujeta");
     $totalGravados                  = params_get("total_gravados");
     $totalExento                    = params_get("total_exento");
     $totalExonerado                 = params_get("total_exonerado");
+    $totalNoSujeto                  = params_get("total_no_sujeto");
     $totalVentas                    = params_get("total_ventas");
     $totalDescuentos                = params_get("total_descuentos");
     $totalVentasNeta                = params_get("total_ventas_neta");
     $totalImp                       = params_get("total_impuestos");
+    $totalImpAsumidoEmisorFabrica   = params_get("total_impuestos_asumidos_fabrica");
+
     $totalOtrosCargos               = params_get("totalOtrosCargos");
     $totalComprobante               = params_get("total_comprobante");
     $otros                          = params_get("otros");
@@ -2418,6 +2663,8 @@ function genXMLFec()
     $detalles                       = json_decode(params_get("detalles"));
     $otrosCargos                     = json_decode(params_get("otrosCargos"));
     $mediosPago                     = json_decode(params_get("medios_pago"));
+    // Resumen
+    $totalDesgloseImpuesto = json_decode(params_get("totalDesgloseImpuesto"));
 
     grace_debug(params_get("detalles"));
 
@@ -2426,6 +2673,9 @@ function genXMLFec()
 
     if ( isset($mediosPago) && $mediosPago != "")
         grace_debug(params_get("medios_pago"));
+
+    if ( isset($totalDesgloseImpuesto) && $totalDesgloseImpuesto != "")
+        grace_debug(params_get("totalDesgloseImpuesto"));
 
     // Validate string sizes
     $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
@@ -2777,6 +3027,10 @@ function genXMLFec()
         $xmlString .= '
         <TotalServExonerado>' . $totalServExonerados . '</TotalServExonerado>';
 
+    if ($totalServNoSujeto != '')
+        $xmlString .= '
+        <TotalServNoSujeto>' . $totalServNoSujeto . '</TotalServNoSujeto>';
+
     if ($totalMercGravadas != '')
         $xmlString .= '
         <TotalMercanciasGravadas>' . $totalMercGravadas . '</TotalMercanciasGravadas>';
@@ -2788,6 +3042,10 @@ function genXMLFec()
     if ($totalMercExonerada != '')
         $xmlString .= '
         <TotalMercExonerada>' . $totalMercExonerada . '</TotalMercExonerada>';
+
+    if ($totalMercNoSujeta != '')
+        $xmlString .= '
+        <TotalMercNoSujeta>' . $totalMercNoSujeta . '</TotalMercNoSujeta>';
 
     if ($totalGravados != '')
         $xmlString .= '
@@ -2801,6 +3059,10 @@ function genXMLFec()
         $xmlString .= '
         <TotalExonerado>' . $totalExonerado . '</TotalExonerado>';
 
+    if ($totalNoSujeto != '')
+        $xmlString .= '
+        <TotalNoSujeto>' . $totalNoSujeto . '</TotalNoSujeto>';
+
     $xmlString .= '
         <TotalVenta>' . $totalVentas . '</TotalVenta>';
 
@@ -2811,18 +3073,57 @@ function genXMLFec()
     $xmlString .= '
         <TotalVentaNeta>' . $totalVentasNeta . '</TotalVentaNeta>';
 
+    // Add logic for TotalDesgloseImpuesto
+    if (isset($totalDesgloseImpuesto) && !empty($totalDesgloseImpuesto)) {
+        foreach ($totalDesgloseImpuesto as $impuesto) {
+            $xmlString .= '
+            <TotalDesgloseImpuesto>';
+            if (isset($impuesto->Codigo)) {
+                $xmlString .= '<Codigo>' . $impuesto->Codigo . '</Codigo>';
+            }
+            if (isset($impuesto->CodigoTarifaIVA)) {
+                $xmlString .= '<CodigoTarifaIVA>' . $impuesto->CodigoTarifaIVA . '</CodigoTarifaIVA>';
+            }
+            if (isset($impuesto->TotalMontoImpuesto)) {
+                $xmlString .= '<TotalMontoImpuesto>' . $impuesto->TotalMontoImpuesto . '</TotalMontoImpuesto>';
+            }
+            $xmlString .= '</TotalDesgloseImpuesto>';
+        }
+    }
+
     if ($totalImp != '')
         $xmlString .= '
         <TotalImpuesto>' . $totalImp . '</TotalImpuesto>';
+
+    if ($totalImpAsumidoEmisorFabrica != '')
+        $xmlString .= '
+        <TotalImpAsumEmisorFabrica>' . $totalImpAsumidoEmisorFabrica . '</TotalImpAsumEmisorFabrica>';
 
     if ( isset($totalOtrosCargos) && $totalOtrosCargos != "")
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
-    if ( isset($mediosPago) && $mediosPago != ""){
-        foreach ($mediosPago as $o)
-        {
-            $xmlString .= '<MedioPago>' . $o->codigo . '</MedioPago>';
+    if (isset($mediosPago) && !empty($mediosPago)) {
+        foreach ($mediosPago as $o) {
+            $xmlString .= '
+            <MedioPago>';
+
+            // Add TipoMedioPago
+            if (isset($o->tipoMedioPago) && !empty($o->tipoMedioPago)) {
+                $xmlString .= '<TipoMedioPago>' . $o->tipoMedioPago . '</TipoMedioPago>';
+            }
+
+            // Add MedioPagoOtros (only if TipoMedioPago is "99")
+            if (isset($o->tipoMedioPago) && $o->tipoMedioPago === "99" && isset($o->medioPagoOtros) && !empty($o->medioPagoOtros)) {
+                $xmlString .= '<MedioPagoOtros>' . htmlspecialchars($o->medioPagoOtros) . '</MedioPagoOtros>';
+            }
+
+            // Add TotalMedioPago
+            if (isset($o->totalMedioPago) && is_numeric($o->totalMedioPago)) {
+                $xmlString .= '<TotalMedioPago>' . number_format($o->totalMedioPago, 2, '.', '') . '</TotalMedioPago>';
+            }
+
+            $xmlString .= '</MedioPago>';
         }
     }
 
@@ -2926,7 +3227,6 @@ function genXMLFee()
     $condVenta                      = params_get("condicion_venta");
     $condVentaOtros                 = params_get("condicion_venta_otros");
     $plazoCredito                   = params_get("plazo_credito");
-    $medioPago                      = json_decode(params_get("medio_pago"));
     $detalles                       = json_decode(params_get("detalles"));
     $otrosCargos                    = json_decode(params_get("otrosCargos"));
     $codMoneda                      = params_get("cod_moneda");
@@ -2942,19 +3242,22 @@ function genXMLFee()
     $totalDescuentos                = params_get("total_descuentos");
     $totalVentasNeta                = params_get("total_ventas_neta");
     $totalImp                       = params_get("total_impuestos");
+    $totalImpAsumidoEmisorFabrica   = params_get("total_impuestos_asumidos_fabrica");
     $totalOtrosCargos               = params_get("totalOtrosCargos");
     $totalComprobante               = params_get("total_comprobante");
     
     $informacionReferencia          = json_decode(params_get("informacionReferencia"));
     $otros                          = json_decode(params_get("otros"));
+    // Resumen
+    $totalDesgloseImpuesto = json_decode(params_get("totalDesgloseImpuesto"));
 
     grace_debug(params_get("detalles"));
 
     if ( isset($otrosCargos) && $otrosCargos != "")
         grace_debug(params_get("otrosCargos"));
 
-    if ( isset($medioPago) && $medioPago != "")
-        grace_debug(params_get("medio_pago"));
+    if ( isset($totalDesgloseImpuesto) && $totalDesgloseImpuesto != "")
+        grace_debug(params_get("totalDesgloseImpuesto"));
 
     // Validate string sizes
     $codigoActividadEmisor = str_pad($codigoActividadEmisor, 6, "0", STR_PAD_LEFT);
@@ -2975,13 +3278,6 @@ function genXMLFee()
             error_log("otrosCargos: ".count($otrosCargos->otrosCargos)." is greater than 15");
             //Delimita el array a solo 4 elementos
             $otrosCargos->otrosCargos = array_slice($otrosCargos->otrosCargos, 0, 15);
-        }
-
-    if ( isset($medioPago) && !empty($medioPago))
-        if (count($medioPago->medioPago) > 4){
-            error_log("medioPago: ".count($medioPago->medioPago)." is greater than 4");
-            //Delimita el array a solo 4 elementos
-            $medioPago->medioPago = array_slice($medioPago->medioPago, 0, 4);
         }
 
     $xmlString = '<?xml version = "1.0" encoding = "utf-8"?>
@@ -3314,34 +3610,59 @@ function genXMLFee()
     $xmlString .= '
         <TotalVentaNeta>' . $totalVentasNeta . '</TotalVentaNeta>';
 
+    // Add logic for TotalDesgloseImpuesto
+    if (isset($totalDesgloseImpuesto) && !empty($totalDesgloseImpuesto)) {
+        foreach ($totalDesgloseImpuesto as $impuesto) {
+            $xmlString .= '
+            <TotalDesgloseImpuesto>';
+            if (isset($impuesto->Codigo)) {
+                $xmlString .= '<Codigo>' . $impuesto->Codigo . '</Codigo>';
+            }
+            if (isset($impuesto->CodigoTarifaIVA)) {
+                $xmlString .= '<CodigoTarifaIVA>' . $impuesto->CodigoTarifaIVA . '</CodigoTarifaIVA>';
+            }
+            if (isset($impuesto->TotalMontoImpuesto)) {
+                $xmlString .= '<TotalMontoImpuesto>' . $impuesto->TotalMontoImpuesto . '</TotalMontoImpuesto>';
+            }
+            $xmlString .= '</TotalDesgloseImpuesto>';
+        }
+    }
+
     if ($totalImp != '')
         $xmlString .= '
         <TotalImpuesto>' . $totalImp . '</TotalImpuesto>';
+
+    if ($totalImpAsumidoEmisorFabrica != '')
+        $xmlString .= '
+        <TotalImpAsumEmisorFabrica>' . $totalImpAsumidoEmisorFabrica . '</TotalImpAsumEmisorFabrica>';
 
     if ( isset($totalOtrosCargos) && $totalOtrosCargos != "")
         $xmlString .= '
         <TotalOtrosCargos>' . $totalOtrosCargos . '</TotalOtrosCargos>';
 
-    // JSON DE EJEMPLO
-    // {
-    //     "medioPago": [
-    //         "01",
-    //         "02",
-    //         "03"
-    //     ]
-    // }
+    if (isset($mediosPago) && !empty($mediosPago)) {
+        foreach ($mediosPago as $o) {
+            $xmlString .= '
+            <MedioPago>';
 
-    if (isset($medioPago) && !empty($medioPago)) {
-        // Iteramos sobre los elementos de otroContenido
-        foreach ($medioPago->medioPago as $c) {
-            $xmlString .= '<MedioPago>' . $c . '</MedioPago>';
+            // Add TipoMedioPago
+            if (isset($o->tipoMedioPago) && !empty($o->tipoMedioPago)) {
+                $xmlString .= '<TipoMedioPago>' . $o->tipoMedioPago . '</TipoMedioPago>';
+            }
+
+            // Add MedioPagoOtros (only if TipoMedioPago is "99")
+            if (isset($o->tipoMedioPago) && $o->tipoMedioPago === "99" && isset($o->medioPagoOtros) && !empty($o->medioPagoOtros)) {
+                $xmlString .= '<MedioPagoOtros>' . htmlspecialchars($o->medioPagoOtros) . '</MedioPagoOtros>';
+            }
+
+            // Add TotalMedioPago
+            if (isset($o->totalMedioPago) && is_numeric($o->totalMedioPago)) {
+                $xmlString .= '<TotalMedioPago>' . number_format($o->totalMedioPago, 2, '.', '') . '</TotalMedioPago>';
+            }
+
+            $xmlString .= '</MedioPago>';
         }
     }
-
-    // XML Resultante
-    // <MedioPago>01</MedioPago>
-    // <MedioPago>02</MedioPago>
-    // <MedioPago>03</MedioPago>
 
 
     $xmlString .= '

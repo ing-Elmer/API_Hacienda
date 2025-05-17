@@ -408,7 +408,7 @@ function genXMLFe()
         $xmlString .= '<SubTotal>' . $d->subTotal . '</SubTotal>';
 
         if (isset($d->IVACobradoFabrica) && $d->IVACobradoFabrica != "") {
-            $xmlString .= '<IVACobradoFabrica>' . $IVACobradoFabrica . '</IVACobradoFabrica>';
+            $xmlString .= '<IVACobradoFabrica>' . $d->$IVACobradoFabrica . '</IVACobradoFabrica>';
         }
 
         if (isset($d->baseImponible) && $d->baseImponible != "") {
@@ -439,7 +439,11 @@ function genXMLFe()
                     <Exoneracion>
                         <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
                         <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>
+                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                    if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
+                        $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
+                    }
+                    $xmlString .= '
                         <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
                         <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
                         <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
@@ -450,6 +454,9 @@ function genXMLFe()
             }
         }
 
+        if (isset($d->impuestoAsumidoEmisorFabrica) && $d->impuestoAsumidoEmisorFabrica != "") {
+            $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
+        }
         if (isset($d->impuestoNeto) && $d->impuestoNeto != "") {
             $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
         }
@@ -463,26 +470,33 @@ function genXMLFe()
     if (isset($otrosCargos) && $otrosCargos != "") {
         foreach ($otrosCargos as $o) {
             $xmlString .= '
-            <OtrosCargos>
-                <TipoDocumento>' . $o->tipoDocumento . '</TipoDocumento>';
-            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "") {
+        <OtrosCargos>
+            <TipoDocumentoOC>' . $o->tipoDocumentoOC . '</TipoDocumentoOC>';
+            if (isset($o->tipoDocumentoOTROS) && $o->tipoDocumentoOTROS != "") {
                 $xmlString .= '
-                <NumeroIdentidadTercero>' . $o->numeroIdentidadTercero . '</NumeroIdentidadTercero>';
+            <TipoDocumentoOTROS>' . $o->tipoDocumentoOTROS . '</TipoDocumentoOTROS>';
+            }
+            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "" && isset($o->tipoIdentidadTercero) && $o->tipoIdentidadTercero != "") {
+                $xmlString .= '
+            <IdentificacionTercero>
+                <Tipo>' . $o->tipoIdentidadTercero . '</Tipo>
+                <Numero>' . $o->numeroIdentidadTercero . '</Numero>
+            </IdentificacionTercero>';
             }
             if (isset($o->nombreTercero) && $o->nombreTercero != "") {
                 $xmlString .= '
-                <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
+            <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
             }
             $xmlString .= '
-                <Detalle>' . $o->detalle . '</Detalle>';
-            if (isset($o->porcentaje) && $o->porcentaje != "") {
+            <Detalle>' . $o->detalle . '</Detalle>';
+            if (isset($o->porcentajeOC) && $o->porcentajeOC != "") {
                 $xmlString .= '
-                <Porcentaje>' . $o->porcentaje . '</Porcentaje>';
+            <PorcentajeOC>' . $o->porcentajeOC . '</PorcentajeOC>';
             }
             $xmlString .= '
-                <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
+            <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
             $xmlString .= '
-            </OtrosCargos>';
+        </OtrosCargos>';
         }
     }
 
@@ -1167,7 +1181,7 @@ function genXMLNC()
         $xmlString .= '<SubTotal>' . $d->subTotal . '</SubTotal>';
 
         if (isset($d->IVACobradoFabrica) && $d->IVACobradoFabrica != "") {
-            $xmlString .= '<IVACobradoFabrica>' . $IVACobradoFabrica . '</IVACobradoFabrica>';
+            $xmlString .= '<IVACobradoFabrica>' . $d->$IVACobradoFabrica . '</IVACobradoFabrica>';
         }
 
         if (isset($d->baseImponible) && $d->baseImponible != "") {
@@ -1201,7 +1215,11 @@ function genXMLNC()
                     <Exoneracion>
                         <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
                         <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>
+                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                    if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
+                        $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
+                    }
+                    $xmlString .= '
                         <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
                         <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
                         <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
@@ -1211,7 +1229,9 @@ function genXMLNC()
                 $xmlString .= '</Impuesto>';
             }
         }
-
+        if (isset($d->impuestoAsumidoEmisorFabrica) && $d->impuestoAsumidoEmisorFabrica != "") {
+            $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
+        }
         if (isset($d->impuestoNeto) && $d->impuestoNeto != "") {
             $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
         }
@@ -1226,28 +1246,33 @@ function genXMLNC()
     if (isset($otrosCargos) && $otrosCargos != "") {
         foreach ($otrosCargos as $o) {
             $xmlString .= '
-            <OtrosCargos>
-                <TipoDocumento>' . $o->tipoDocumento . '</TipoDocumento>';
-            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "") {
+        <OtrosCargos>
+            <TipoDocumentoOC>' . $o->tipoDocumentoOC . '</TipoDocumentoOC>';
+            if (isset($o->tipoDocumentoOTROS) && $o->tipoDocumentoOTROS != "") {
                 $xmlString .= '
-                <NumeroIdentidadTercero>' . $o->numeroIdentidadTercero . '</NumeroIdentidadTercero>';
+            <TipoDocumentoOTROS>' . $o->tipoDocumentoOTROS . '</TipoDocumentoOTROS>';
+            }
+            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "" && isset($o->tipoIdentidadTercero) && $o->tipoIdentidadTercero != "") {
+                $xmlString .= '
+            <IdentificacionTercero>
+                <Tipo>' . $o->tipoIdentidadTercero . '</Tipo>
+                <Numero>' . $o->numeroIdentidadTercero . '</Numero>
+            </IdentificacionTercero>';
             }
             if (isset($o->nombreTercero) && $o->nombreTercero != "") {
                 $xmlString .= '
-                <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
+            <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
             }
-            //if ( isset($o->detalle) && $o->detalle != "")
             $xmlString .= '
-                <Detalle>' . $o->detalle . '</Detalle>';
-            if (isset($o->porcentaje) && $o->porcentaje != "") {
+            <Detalle>' . $o->detalle . '</Detalle>';
+            if (isset($o->porcentajeOC) && $o->porcentajeOC != "") {
                 $xmlString .= '
-                <Porcentaje>' . $o->porcentaje . '</Porcentaje>';
+            <PorcentajeOC>' . $o->porcentajeOC . '</PorcentajeOC>';
             }
-            //if ( isset($o->montoCargo) && $o->montoCargo != "")
             $xmlString .= '
-                <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
+            <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
             $xmlString .= '
-            </OtrosCargos>';
+        </OtrosCargos>';
         }
     }
 
@@ -1926,7 +1951,7 @@ function genXMLND()
         $xmlString .= '<SubTotal>' . $d->subTotal . '</SubTotal>';
 
         if (isset($d->IVACobradoFabrica) && $d->IVACobradoFabrica != "") {
-            $xmlString .= '<IVACobradoFabrica>' . $IVACobradoFabrica . '</IVACobradoFabrica>';
+            $xmlString .= '<IVACobradoFabrica>' . $d->$IVACobradoFabrica . '</IVACobradoFabrica>';
         }
 
         if (isset($d->baseImponible) && $d->baseImponible != "") {
@@ -1960,17 +1985,23 @@ function genXMLND()
                     <Exoneracion>
                         <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
                         <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>
+                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                    if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
+                        $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
+                    }
+                    $xmlString .= '
                         <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
-                        <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
                         <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
+                        <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
                     </Exoneracion>';
                 }
 
                 $xmlString .= '</Impuesto>';
             }
         }
-
+        if (isset($d->impuestoAsumidoEmisorFabrica) && $d->impuestoAsumidoEmisorFabrica != "") {
+            $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
+        }
         if (isset($d->impuestoNeto) && $d->impuestoNeto != "") {
             $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
         }
@@ -1985,26 +2016,33 @@ function genXMLND()
     if (isset($otrosCargos) && $otrosCargos != "") {
         foreach ($otrosCargos as $o) {
             $xmlString .= '
-            <OtrosCargos>
-                <TipoDocumento>' . $o->tipoDocumento . '</TipoDocumento>';
-            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "") {
+        <OtrosCargos>
+            <TipoDocumentoOC>' . $o->tipoDocumentoOC . '</TipoDocumentoOC>';
+            if (isset($o->tipoDocumentoOTROS) && $o->tipoDocumentoOTROS != "") {
                 $xmlString .= '
-                <NumeroIdentidadTercero>' . $o->numeroIdentidadTercero . '</NumeroIdentidadTercero>';
+            <TipoDocumentoOTROS>' . $o->tipoDocumentoOTROS . '</TipoDocumentoOTROS>';
+            }
+            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "" && isset($o->tipoIdentidadTercero) && $o->tipoIdentidadTercero != "") {
+                $xmlString .= '
+            <IdentificacionTercero>
+                <Tipo>' . $o->tipoIdentidadTercero . '</Tipo>
+                <Numero>' . $o->numeroIdentidadTercero . '</Numero>
+            </IdentificacionTercero>';
             }
             if (isset($o->nombreTercero) && $o->nombreTercero != "") {
                 $xmlString .= '
-                <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
+            <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
             }
             $xmlString .= '
-                <Detalle>' . $o->detalle . '</Detalle>';
-            if (isset($o->porcentaje) && $o->porcentaje != "") {
+            <Detalle>' . $o->detalle . '</Detalle>';
+            if (isset($o->porcentajeOC) && $o->porcentajeOC != "") {
                 $xmlString .= '
-                <Porcentaje>' . $o->porcentaje . '</Porcentaje>';
+            <PorcentajeOC>' . $o->porcentajeOC . '</PorcentajeOC>';
             }
             $xmlString .= '
-                <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
+            <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
             $xmlString .= '
-            </OtrosCargos>';
+        </OtrosCargos>';
         }
     }
 
@@ -2674,7 +2712,7 @@ function genXMLTE()
         $xmlString .= '<SubTotal>' . $d->subTotal . '</SubTotal>';
 
         if (isset($d->IVACobradoFabrica) && $d->IVACobradoFabrica != "") {
-            $xmlString .= '<IVACobradoFabrica>' . $IVACobradoFabrica . '</IVACobradoFabrica>';
+            $xmlString .= '<IVACobradoFabrica>' . $d->$IVACobradoFabrica . '</IVACobradoFabrica>';
         }
 
         if (isset($d->baseImponible) && $d->baseImponible != "") {
@@ -2708,7 +2746,11 @@ function genXMLTE()
                     <Exoneracion>
                         <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
                         <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>
+                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                    if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
+                        $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
+                    }
+                    $xmlString .= '
                         <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
                         <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
                         <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
@@ -2719,7 +2761,9 @@ function genXMLTE()
                 </Impuesto>';
             }
         }
-
+        if (isset($d->impuestoAsumidoEmisorFabrica) && $d->impuestoAsumidoEmisorFabrica != "") {
+            $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
+        }
         if (isset($d->impuestoNeto) && $d->impuestoNeto != "") {
             $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
         }
@@ -2734,28 +2778,33 @@ function genXMLTE()
     if (isset($otrosCargos) && $otrosCargos != "") {
         foreach ($otrosCargos as $o) {
             $xmlString .= '
-            <OtrosCargos>
-                <TipoDocumento>' . $o->tipoDocumento . '</TipoDocumento>';
-            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "") {
+        <OtrosCargos>
+            <TipoDocumentoOC>' . $o->tipoDocumentoOC . '</TipoDocumentoOC>';
+            if (isset($o->tipoDocumentoOTROS) && $o->tipoDocumentoOTROS != "") {
                 $xmlString .= '
-                <NumeroIdentidadTercero>' . $o->numeroIdentidadTercero . '</NumeroIdentidadTercero>';
+            <TipoDocumentoOTROS>' . $o->tipoDocumentoOTROS . '</TipoDocumentoOTROS>';
+            }
+            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "" && isset($o->tipoIdentidadTercero) && $o->tipoIdentidadTercero != "") {
+                $xmlString .= '
+            <IdentificacionTercero>
+                <Tipo>' . $o->tipoIdentidadTercero . '</Tipo>
+                <Numero>' . $o->numeroIdentidadTercero . '</Numero>
+            </IdentificacionTercero>';
             }
             if (isset($o->nombreTercero) && $o->nombreTercero != "") {
                 $xmlString .= '
-                <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
+            <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
             }
-            //if ( isset($o->detalle) && $o->detalle != "")
             $xmlString .= '
-                <Detalle>' . $o->detalle . '</Detalle>';
-            if (isset($o->porcentaje) && $o->porcentaje != "") {
+            <Detalle>' . $o->detalle . '</Detalle>';
+            if (isset($o->porcentajeOC) && $o->porcentajeOC != "") {
                 $xmlString .= '
-                <Porcentaje>' . $o->porcentaje . '</Porcentaje>';
+            <PorcentajeOC>' . $o->porcentajeOC . '</PorcentajeOC>';
             }
-            //if ( isset($o->montoCargo) && $o->montoCargo != "")
             $xmlString .= '
-                <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
+            <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
             $xmlString .= '
-            </OtrosCargos>';
+        </OtrosCargos>';
         }
     }
 
@@ -3509,7 +3558,11 @@ function genXMLFec()
                     <Exoneracion>
                         <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
                         <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>
+                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                    if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
+                        $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
+                    }
+                    $xmlString .= '
                         <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
                         <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
                         <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
@@ -3533,26 +3586,33 @@ function genXMLFec()
     if (isset($otrosCargos) && $otrosCargos != "") {
         foreach ($otrosCargos as $o) {
             $xmlString .= '
-            <OtrosCargos>
-                <TipoDocumento>' . $o->tipoDocumento . '</TipoDocumento>';
-            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "") {
+        <OtrosCargos>
+            <TipoDocumentoOC>' . $o->tipoDocumentoOC . '</TipoDocumentoOC>';
+            if (isset($o->tipoDocumentoOTROS) && $o->tipoDocumentoOTROS != "") {
                 $xmlString .= '
-                <NumeroIdentidadTercero>' . $o->numeroIdentidadTercero . '</NumeroIdentidadTercero>';
+            <TipoDocumentoOTROS>' . $o->tipoDocumentoOTROS . '</TipoDocumentoOTROS>';
+            }
+            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "" && isset($o->tipoIdentidadTercero) && $o->tipoIdentidadTercero != "") {
+                $xmlString .= '
+            <IdentificacionTercero>
+                <Tipo>' . $o->tipoIdentidadTercero . '</Tipo>
+                <Numero>' . $o->numeroIdentidadTercero . '</Numero>
+            </IdentificacionTercero>';
             }
             if (isset($o->nombreTercero) && $o->nombreTercero != "") {
                 $xmlString .= '
-                <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
+            <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
             }
             $xmlString .= '
-                <Detalle>' . $o->detalle . '</Detalle>';
-            if (isset($o->porcentaje) && $o->porcentaje != "") {
+            <Detalle>' . $o->detalle . '</Detalle>';
+            if (isset($o->porcentajeOC) && $o->porcentajeOC != "") {
                 $xmlString .= '
-                <Porcentaje>' . $o->porcentaje . '</Porcentaje>';
+            <PorcentajeOC>' . $o->porcentajeOC . '</PorcentajeOC>';
             }
             $xmlString .= '
-                <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
+            <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
             $xmlString .= '
-            </OtrosCargos>';
+        </OtrosCargos>';
         }
     }
 
@@ -4204,43 +4264,88 @@ function genXMLFee()
     $xmlString .= '</DetalleServicio>';
 
     // JSON DE EJEMPLO
-    // {
-    //     "otrosCargos": [
-    //         {
-    //             "detalle": "123",
-    //             "montoCargo": "123",
-    //             "porcentaje": "123",
-    //             "tipoDocumento": "01"
-    //         }
-    //     ]
-    // }
+    //    [
+    //      {
+    //          "tipoDocumentoOC": "10",
+    //        "tipoDocumentoOTROS": "string",
+    //        "tipoIdentidadTercero": "01",
+    //        "numeroIdentidadTercero": "160029688",
+    //        "nombreTercero": "John Doe",
+    //        "detalle": "Additional charge for service",
+    //        "porcentajeOC": "1452590.23",
+    //        "montoCargo": "1258720.23491"
+    //      },
+    //      {
+    //          "tipoDocumentoOC": "20",
+    //        "tipoDocumentoOTROS": "other",
+    //        "tipoIdentidadTercero": "02",
+    //        "numeroIdentidadTercero": "123456789",
+    //        "nombreTercero": "Jane Smith",
+    //        "detalle": "Extra fee for expedited processing",
+    //        "porcentajeOC": "10.50",
+    //        "montoCargo": "500.00"
+    //      }
+    //    ]
 
-    if (isset($otrosCargos) && !empty($otrosCargos)) {
-        // Iteramos sobre los elementos de otroContenido
-        foreach ($otrosCargos->otrosCargos as $o) {
+    //OtrosCargos
+    if (isset($otrosCargos) && $otrosCargos != "") {
+        foreach ($otrosCargos as $o) {
             $xmlString .= '
-            <OtrosCargos>
-                <TipoDocumento>' . $o->tipoDocumento . '</TipoDocumento>';
-            $xmlString .= '
-                <Detalle>' . $o->detalle . '</Detalle>';
-            if (isset($o->porcentaje) && $o->porcentaje != "") {
+        <OtrosCargos>
+            <TipoDocumentoOC>' . $o->tipoDocumentoOC . '</TipoDocumentoOC>';
+            if (isset($o->tipoDocumentoOTROS) && $o->tipoDocumentoOTROS != "") {
                 $xmlString .= '
-                <Porcentaje>' . $o->porcentaje . '</Porcentaje>';
+            <TipoDocumentoOTROS>' . $o->tipoDocumentoOTROS . '</TipoDocumentoOTROS>';
+            }
+            if (isset($o->numeroIdentidadTercero) && $o->numeroIdentidadTercero != "" && isset($o->tipoIdentidadTercero) && $o->tipoIdentidadTercero != "") {
+                $xmlString .= '
+            <IdentificacionTercero>
+                <Tipo>' . $o->tipoIdentidadTercero . '</Tipo>
+                <Numero>' . $o->numeroIdentidadTercero . '</Numero>
+            </IdentificacionTercero>';
+            }
+            if (isset($o->nombreTercero) && $o->nombreTercero != "") {
+                $xmlString .= '
+            <NombreTercero>' . $o->nombreTercero . '</NombreTercero>';
             }
             $xmlString .= '
-                <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
+            <Detalle>' . $o->detalle . '</Detalle>';
+            if (isset($o->porcentajeOC) && $o->porcentajeOC != "") {
+                $xmlString .= '
+            <PorcentajeOC>' . $o->porcentajeOC . '</PorcentajeOC>';
+            }
             $xmlString .= '
-            </OtrosCargos>';
+            <MontoCargo>' . $o->montoCargo . '</MontoCargo>';
+            $xmlString .= '
+        </OtrosCargos>';
         }
     }
 
     // XML Resultante
-    // <OtrosCargos>
-    //     <TipoDocumento>01</TipoDocumento>
-    //     <Detalle>123</Detalle>
-    //     <Porcentaje>123</Porcentaje>
-    //     <MontoCargo>123</MontoCargo>
-    // </OtrosCargos>
+    //    <OtrosCargos>
+    //      <TipoDocumentoOC>10</TipoDocumentoOC>
+    //      <TipoDocumentoOTROS>string</TipoDocumentoOTROS>
+    //      <IdentificacionTercero>
+    //        <Tipo>01</Tipo>
+    //        <Numero>160029688</Numero>
+    //      </IdentificacionTercero>
+    //      <NombreTercero>John Doe</NombreTercero>
+    //      <Detalle>Additional charge for service</Detalle>
+    //      <PorcentajeOC>1452590.23</PorcentajeOC>
+    //      <MontoCargo>1258720.23491</MontoCargo>
+    //    </OtrosCargos>
+    //    <OtrosCargos>
+    //      <TipoDocumentoOC>20</TipoDocumentoOC>
+    //      <TipoDocumentoOTROS>other</TipoDocumentoOTROS>
+    //      <IdentificacionTercero>
+    //        <Tipo>02</Tipo>
+    //        <Numero>123456789</Numero>
+    //      </IdentificacionTercero>
+    //      <NombreTercero>Jane Smith</NombreTercero>
+    //      <Detalle>Extra fee for expedited processing</Detalle>
+    //      <PorcentajeOC>10.50</PorcentajeOC>
+    //      <MontoCargo>500.00</MontoCargo>
+    //    </OtrosCargos>
 
     $xmlString .= '
     <ResumenFactura>';

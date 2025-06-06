@@ -104,18 +104,11 @@ function genXMLFe()
     $totalOtrosCargos = params_get("totalOtrosCargos");
     $totalComprobante = params_get("total_comprobante");
 
-    $otros = params_get("otros");
-    $otrosType = params_get("otrosType");
-    $infoRefeTipoDoc = params_get("infoRefeTipoDoc");
-    $infoRefeTipoDocOtro = params_get("infoRefeTipoDocOTRO");
-    $infoRefeNumero = params_get("infoRefeNumero");
-    $infoRefeFechaEmision = params_get("infoRefeFechaEmision");
-    $infoRefeCodigo = params_get("infoRefeCodigo");
-    $infoRefeCodigoOtro = params_get("infoRefeCodigoOTRO");
-    $infoRefeRazon = params_get("infoRefeRazon");
+    $otros = json_decode(params_get('otros'));
 
     // Detalles de la compra
     $detalles = json_decode(params_get("detalles"));
+    $informacionReferencia = json_decode(params_get("informacion_referencia"));
     $otrosCargos = json_decode(params_get("otrosCargos"));
     $mediosPago = json_decode(params_get("medios_pago"));
 
@@ -309,12 +302,133 @@ function genXMLFe()
     $xmlString .= '
         <DetalleServicio>';
 
-    // cant - unidad medida - detalle - precio unitario - monto total - subtotal - monto total linea - Monto desc -Naturaleza Desc - Impuesto : Codigo / Tarifa / Monto
     /* EJEMPLO DE DETALLES
+      [
       {
-      "1":["1","Sp","Honorarios","100000","100000","100000","100000","1000","Pronto pago",{"Imp": [{"cod": 122,"tarifa": 1,"monto": 100},{"cod": 133,"tarifa": 1,"monto": 1300}]}],
-      "2":["1","Sp","Honorarios","100000","100000","100000","100000"]
+        "codigoCABYS": "101010101",
+        "codigoComercial": [
+          { "tipo": "01", "codigo": "A123" },
+          { "tipo": "02", "codigo": "B456" }
+        ],
+        "cantidad": 2,
+        "unidadMedida": "Unid",
+        "tipoTransaccion": "Venta",
+        "unidadMedidaComercial": "Caja",
+        "detalle": "Medicamento genérico",
+        "numeroVINoSerie": "VIN123456789",
+        "registroMedicamento": "REG-CR-2024-0001",
+        "formaFarmaceutica": "TAB",
+        "detalleSurtido": [
+          {
+            "codigoCABYSSurtido": "202020202",
+            "codigoComercialSurtido": [
+              { "tipoSurtido": "01", "codigoSurtido": "S123" }
+            ],
+            "cantidadSurtido": 1,
+            "unidadMedidaSurtido": "Unid",
+            "unidadMedidaComercialSurtido": "Blister",
+            "detalleSurtido": "Surtido de medicamento",
+            "precioUnitarioSurtido": 120.00,
+            "montoTotalSurtido": 120.00,
+            "descuentoSurtido": [
+              {
+                "montoDescuentoSurtido": 10.00,
+                "codigoDescuentoSurtido": "01",
+                "descuentoSurtidoOtros": "Descuento especial"
+              }
+            ],
+            "subTotalSurtido": 110.00,
+            "ivaCobradoFabricaSurtido": 5.00,
+            "baseImponibleSurtido": 105.00,
+            "impuestoSurtido": [
+              {
+                "codigoImpuestoSurtido": "01",
+                "codigoTarifaIVASurtido": "08",
+                "tarifaSurtido": 13.00,
+                "montoImpuestoSurtido": 13.65,
+                "datosImpuestoEspecificoSurtido": {
+                  "cantidadUnidadMedidaSurtido": 1,
+                  "porcentajeSurtido": 5.0,
+                  "proporcionSurtido": 0.5,
+                  "volumenUnidadConsumoSurtido": 0.1,
+                  "impuestoUnidadSurtido": 2.00
+                }
+              }
+            ]
+          }
+        ],
+        "precioUnitario": 150.00,
+        "montoTotal": 300.00,
+        "descuento": [
+          {
+            "montoDescuento": 20.00,
+            "codigoDescuento": "99",
+            "codigoDescuentoOTRO": "DESC-OTRO-001",
+            "naturalezaDescuento": "Descuento por promoción"
+          }
+        ],
+        "subTotal": 280.00,
+        "IVACobradoFabrica": 10.00,
+        "baseImponible": 270.00,
+        "impuesto": [
+          {
+            "codigo": "01",
+            "codigoTarifa": "08",
+            "tarifa": 13.00,
+            "factorIVA": 1.0,
+            "monto": 35.10,
+            "exoneracion": {
+              "tipoDocumento": "01",
+              "tipoDocumentoOtro": "OTRODOC",
+              "numeroDocumento": "EXON-2024-001",
+              "numeroArticulo": "ART-01",
+              "numeroInciso": "INC-01",
+              "nombreInstitucion": "Ministerio de Salud",
+              "nombreInstitucionOtros": "Otra Institución",
+              "fechaEmision": "2024-06-01",
+              "tarifaExoneracion": 50.0,
+              "montoExoneracion": 17.55
+            }
+          },
+          {
+            "codigo": "03",
+            "codigoTarifa": "01",
+            "tarifa": 2.00,
+            "factorIVA": 0.5,
+            "monto": 5.00,
+            "datosImpuestoEspecifico": {
+              "cantidadUnidadMedida": 2,
+              "porcentaje": 10.0,
+              "proporcion": 0.2,
+              "volumenUnidadConsumo": 0.5,
+              "impuestoUnidad": 1.00
+            }
+          }
+        ],
+        "impuestoAsumidoEmisorFabrica": 2.00,
+        "impuestoNeto": 22.55,
+        "montoTotalLinea": 302.55
+      },
+      {
+        "codigoCABYS": "303030303",
+        "cantidad": 1,
+        "unidadMedida": "Kg",
+        "detalle": "Producto sin surtido ni descuentos",
+        "precioUnitario": 50.00,
+        "montoTotal": 50.00,
+        "subTotal": 50.00,
+        "baseImponible": 50.00,
+        "impuesto": [
+          {
+            "codigo": "01",
+            "codigoTarifa": "08",
+            "tarifa": 13.00,
+            "monto": 6.50
+          }
+        ],
+        "montoTotalLinea": 56.50
       }
+    ]
      */
     $l = 1;
     foreach ($detalles as $d) {
@@ -322,85 +436,180 @@ function genXMLFe()
         <LineaDetalle>
             <NumeroLinea>' . $l . '</NumeroLinea>';
 
-        if (isset($d->codigo) && $d->codigo != "") {
-            $xmlString .= '
-            <Codigo>' . $d->codigo . '</Codigo>';
-        }
+        $xmlString .= '
+            <CodigoCABYS>' . $d->codigoCABYS . '</CodigoCABYS>';
 
-        if (isset($d->codigoComercial) && is_string($d->codigoComercial) && strlen($d->codigoComercial) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->codigoComercial) > 5) {
-                error_log("codigoComercial: " . count($d->codigoComercial) . " is greater than 5");
-            }
-            $d->codigoComercial = array_slice($d->codigoComercial, 0, 5);
-            foreach ($d->codigoComercial as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
-                }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
-            }
-        }
+        if (isset($d->codigoComercial) && !empty($d->codigoComercial)) {
+            // Convertir el objeto $d->codigoComercial en un array
+            $codigoComercialArray = (array)$d->codigoComercial;
 
-        if (isset($d->codigoComercialLinea) && $d->codigoComercialLinea != "" && $d->codigoComercialLinea != 0) {
-            foreach ($d->codigoComercialLinea as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
+            // Delimitar el array a solo 5 elementos
+            if (count($codigoComercialArray) > 5) {
+                error_log("codigoComercial: " . count($codigoComercialArray) . " is greater than 5");
+            }
+            $codigoComercialArray = array_slice($codigoComercialArray, 0, 5);
+
+            // Iterar sobre los elementos del array
+            foreach ($codigoComercialArray as $codigos) {
+                $c = (array)$codigos;
+                // Verificar si el elemento es un array asociativo
+                if (is_array($c) && isset($c['tipo']) && $c['tipo'] != "" && isset($c['codigo']) && $c['codigo'] != "") {
                     $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
+                        <CodigoComercial>
+                            <Tipo>' . $c['tipo'] . '</Tipo>
+                            <Codigo>' . $c['codigo'] . '</Codigo>
+                        </CodigoComercial>';
                 }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
             }
         }
 
         $xmlString .= '
             <Cantidad>' . $d->cantidad . '</Cantidad>
             <UnidadMedida>' . $d->unidadMedida . '</UnidadMedida>';
-
-        if (isset($c->codigo) && $c->codigo != "") {
+        if (isset($d->tipoTransaccion) && $d->tipoTransaccion != "") {
+            $xmlString .= '
+                <TipoTransaccion>' . $d->tipoTransaccion . '</TipoTransaccion>';
+        }
+        if (isset($d->unidadMedidaComercial) && $d->unidadMedidaComercial != "") {
             $xmlString .= '
                 <UnidadMedidaComercial>' . $d->unidadMedidaComercial . '</UnidadMedidaComercial>';
         }
         $xmlString .= '
-            <Detalle>' . $d->detalle . '</Detalle>
+            <Detalle>' . $d->detalle . '</Detalle>';
+        if (isset($d->numeroVINoSerie) && $d->numeroVINoSerie != "") {
+            $xmlString .= '<NumeroVINoSerie>' . $d->numeroVINoSerie . '</NumeroVINoSerie>';
+        }
+
+        if (isset($d->registroMedicamento) && $d->registroMedicamento !== "") {
+            $xmlString .= '<RegistroMedicamento>' . htmlspecialchars($d->registroMedicamento) . '</RegistroMedicamento>';
+        }
+        if (isset($d->formaFarmaceutica) && $d->formaFarmaceutica !== "") {
+            $xmlString .= '<FormaFarmaceutica>' . htmlspecialchars($d->formaFarmaceutica) . '</FormaFarmaceutica>';
+        }
+
+        if (isset($d->detalleSurtido) && is_array($d->detalleSurtido) && count($d->detalleSurtido) > 0) {
+            $xmlString .= '<DetalleSurtido>';
+            $lineas = array_slice($d->detalleSurtido, 0, 20);
+            foreach ($lineas as $linea) {
+                $xmlString .= '<LineaDetalleSurtido>';
+                $xmlString .= '<CodigoCABYSSurtido>' . $linea->codigoCABYSSurtido . '</CodigoCABYSSurtido>';
+                if (isset($linea->codigoComercialSurtido) && is_array($linea->codigoComercialSurtido)) {
+                    $codigos = array_slice($linea->codigoComercialSurtido, 0, 5);
+                    foreach ($codigos as $codigo) {
+                        $xmlString .= '<CodigoComercialSurtido>';
+                        $xmlString .= '<TipoSurtido>' . $codigo->tipoSurtido . '</TipoSurtido>';
+                        $xmlString .= '<CodigoSurtido>' . $codigo->codigoSurtido . '</CodigoSurtido>';
+                        $xmlString .= '</CodigoComercialSurtido>';
+                    }
+                }
+                $xmlString .= '<CantidadSurtido>' . $linea->cantidadSurtido . '</CantidadSurtido>';
+                $xmlString .= '<UnidadMedidaSurtido>' . $linea->unidadMedidaSurtido . '</UnidadMedidaSurtido>';
+                if (isset($linea->unidadMedidaComercialSurtido)) {
+                    $xmlString .= '<UnidadMedidaComercialSurtido>' . $linea->unidadMedidaComercialSurtido . '</UnidadMedidaComercialSurtido>';
+                }
+                $xmlString .= '<DetalleSurtido>' . $linea->detalleSurtido . '</DetalleSurtido>';
+                $xmlString .= '<PrecioUnitarioSurtido>' . $linea->precioUnitarioSurtido . '</PrecioUnitarioSurtido>';
+                $xmlString .= '<MontoTotalSurtido>' . $linea->montoTotalSurtido . '</MontoTotalSurtido>';
+                if (isset($linea->descuentoSurtido) && is_array($linea->descuentoSurtido)) {
+                    $descuentos = array_slice($linea->descuentoSurtido, 0, 5);
+                    foreach ($descuentos as $desc) {
+                        $xmlString .= '<DescuentoSurtido>';
+                        $xmlString .= '<MontoDescuentoSurtido>' . $desc->montoDescuentoSurtido . '</MontoDescuentoSurtido>';
+                        $xmlString .= '<CodigoDescuentoSurtido>' . $desc->codigoDescuentoSurtido . '</CodigoDescuentoSurtido>';
+                        if (isset($desc->descuentoSurtidoOtros)) {
+                            $xmlString .= '<DescuentoSurtidoOtros>' . $desc->descuentoSurtidoOtros . '</DescuentoSurtidoOtros>';
+                        }
+                        $xmlString .= '</DescuentoSurtido>';
+                    }
+                }
+                $xmlString .= '<SubTotalSurtido>' . $linea->subTotalSurtido . '</SubTotalSurtido>';
+                if (isset($linea->ivaCobradoFabricaSurtido)) {
+                    $xmlString .= '<IVACobradoFabricaSurtido>' . $linea->ivaCobradoFabricaSurtido . '</IVACobradoFabricaSurtido>';
+                }
+                $xmlString .= '<BaseImponibleSurtido>' . $linea->baseImponibleSurtido . '</BaseImponibleSurtido>';
+                if (isset($linea->impuestoSurtido) && is_array($linea->impuestoSurtido)) {
+                    $impuestos = array_slice($linea->impuestoSurtido, 0, 1000);
+                    foreach ($impuestos as $imp) {
+                        $xmlString .= '<ImpuestoSurtido>';
+                        $xmlString .= '<CodigoImpuestoSurtido>' . $imp->codigoImpuestoSurtido . '</CodigoImpuestoSurtido>';
+                        if (isset($imp->codigoImpuestoOTROSurtido)) {
+                            $xmlString .= '<CodigoImpuestoOTROSurtido>' . $imp->codigoImpuestoOTROSurtido . '</CodigoImpuestoOTROSurtido>';
+                        }
+                        if (isset($imp->codigoTarifaIVASurtido)) {
+                            $xmlString .= '<CodigoTarifaIVASurtido>' . $imp->codigoTarifaIVASurtido . '</CodigoTarifaIVASurtido>';
+                        }
+                        if (isset($imp->tarifaSurtido)) {
+                            $xmlString .= '<TarifaSurtido>' . $imp->tarifaSurtido . '</TarifaSurtido>';
+                        }
+                        if (isset($imp->datosImpuestoEspecificoSurtido)) {
+                            $e = $imp->datosImpuestoEspecificoSurtido;
+                            $xmlString .= '<DatosImpuestoEspecificoSurtido>';
+                            if (isset($e->cantidadUnidadMedidaSurtido)) {
+                                $xmlString .= '<CantidadUnidadMedidaSurtido>' . $e->cantidadUnidadMedidaSurtido . '</CantidadUnidadMedidaSurtido>';
+                            }
+                            if (isset($e->porcentajeSurtido)) {
+                                $xmlString .= '<PorcentajeSurtido>' . $e->porcentajeSurtido . '</PorcentajeSurtido>';
+                            }
+                            if (isset($e->proporcionSurtido)) {
+                                $xmlString .= '<ProporcionSurtido>' . $e->proporcionSurtido . '</ProporcionSurtido>';
+                            }
+                            if (isset($e->volumenUnidadConsumoSurtido)) {
+                                $xmlString .= '<VolumenUnidadConsumoSurtido>' . $e->volumenUnidadConsumoSurtido . '</VolumenUnidadConsumoSurtido>';
+                            }
+                            if (isset($e->impuestoUnidadSurtido)) {
+                                $xmlString .= '<ImpuestoUnidadSurtido>' . $e->impuestoUnidadSurtido . '</ImpuestoUnidadSurtido>';
+                            }
+                            $xmlString .= '</DatosImpuestoEspecificoSurtido>';
+                        }
+                        $xmlString .= '<MontoImpuestoSurtido>' . $imp->montoImpuestoSurtido . '</MontoImpuestoSurtido>';
+                        $xmlString .= '</ImpuestoSurtido>';
+                    }
+                }
+                $xmlString .= '</LineaDetalleSurtido>';
+            }
+            $xmlString .= '</DetalleSurtido>';
+        }
+
+        $xmlString .= '
             <PrecioUnitario>' . $d->precioUnitario . '</PrecioUnitario>
             <MontoTotal>' . $d->montoTotal . '</MontoTotal>';
 
-        if (isset($d->descuento) && is_string($d->descuento) && strlen($d->descuento) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->descuento) > 5) {
-                error_log("descuento: " . count($d->descuento) . " is greater than 5");
-            }
-            $d->descuento = array_slice($d->descuento, 0, 5);
-            foreach ($d->descuento as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
-                    $xmlString .= '<Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
-                }
-            }
-        }
+        if (isset($d->descuento) && !empty($d->descuento)) {
+            $descuentoArray = (array)$d->descuento;
 
-        if (isset($d->descuentoLinea) && $d->descuentoLinea != "" && $d->descuentoLinea != 0) {
-            foreach ($d->descuentoLinea as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
+            if (count($descuentoArray) > 5) {
+                error_log("descuento: " . count($descuentoArray) . " is greater than 5");
+            }
+            $descuentoArray = array_slice($descuentoArray, 0, 5);
+
+            foreach ($descuentoArray as $descuentos) {
+                $c = (array)$descuentos;
+                if (
+                    is_array($c) &&
+                    isset($c['montoDescuento']) && $c['montoDescuento'] !== "" &&
+                    isset($c['codigoDescuento']) && $c['codigoDescuento'] !== ""
+                ) {
                     $xmlString .= '
-                    <Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
+                <Descuento>
+                    <MontoDescuento>' . $c['montoDescuento'] . '</MontoDescuento>
+                    <CodigoDescuento>' . $c['codigoDescuento'] . '</CodigoDescuento>';
+                    // CodigoDescuentoOTRO: obligatorio si codigoDescuento == "99" y existe el campo
+                    if (
+                        isset($c['codigoDescuento']) && $c['codigoDescuento'] === "99" &&
+                        isset($c['codigoDescuentoOTRO']) &&
+                        strlen($c['codigoDescuentoOTRO']) >= 5 && strlen($c['codigoDescuentoOTRO']) <= 100
+                    ) {
+                        $xmlString .= '<CodigoDescuentoOTRO>' . htmlspecialchars($c['codigoDescuentoOTRO']) . '</CodigoDescuentoOTRO>';
+                    }
+                    // NaturalezaDescuento: minOccurs=0, longitud 3-80
+                    if (
+                        isset($c['naturalezaDescuento']) &&
+                        strlen($c['naturalezaDescuento']) >= 3 && strlen($c['naturalezaDescuento']) <= 80
+                    ) {
+                        $xmlString .= '<NaturalezaDescuento>' . htmlspecialchars($c['naturalezaDescuento']) . '</NaturalezaDescuento>';
+                    }
+                    $xmlString .= '
+                </Descuento>';
                 }
             }
         }
@@ -408,7 +617,7 @@ function genXMLFe()
         $xmlString .= '<SubTotal>' . $d->subTotal . '</SubTotal>';
 
         if (isset($d->IVACobradoFabrica) && $d->IVACobradoFabrica != "") {
-            $xmlString .= '<IVACobradoFabrica>' . $d->$IVACobradoFabrica . '</IVACobradoFabrica>';
+            $xmlString .= '<IVACobradoFabrica>' . $d->IVACobradoFabrica . '</IVACobradoFabrica>';
         }
 
         if (isset($d->baseImponible) && $d->baseImponible != "") {
@@ -420,8 +629,17 @@ function genXMLFe()
                 $xmlString .= '
                 <Impuesto>
                     <Codigo>' . $i->codigo . '</Codigo>';
+
+                // Add <CodigoImpuestoOTRO> if required
+                if (
+                    isset($i->codigo) && $i->codigo == "99" &&
+                    isset($i->codigoImpuestoOtro) && !empty($i->codigoImpuestoOtro)
+                ) {
+                    $xmlString .= '<CodigoImpuestoOTRO>' . $i->codigoImpuestoOtro . '</CodigoImpuestoOTRO>';
+                }
+
                 if (isset($i->codigoTarifa) && $i->codigoTarifa != "") {
-                    $xmlString .= '<CodigoTarifa>' . $i->codigoTarifa . '</CodigoTarifa>';
+                    $xmlString .= '<CodigoTarifaIVA>' . $i->codigoTarifa . '</CodigoTarifaIVA>';
                 }
 
                 if (isset($i->tarifa) && $i->tarifa != "") {
@@ -429,7 +647,33 @@ function genXMLFe()
                 }
 
                 if (isset($i->factorIVA) && $i->factorIVA != "") {
-                    $xmlString .= '<FactorIVA>' . $i->factorIVA . '</FactorIVA>';
+                    $xmlString .= '<FactorCalculoIVA>' . $i->factorIVA . '</FactorCalculoIVA>';
+                }
+
+                if (
+                    isset($i->codigo) &&
+                    in_array($i->codigo, ["03", "04", "05", "06"]) &&
+                    isset($i->datosImpuestoEspecifico) &&
+                    is_object($i->datosImpuestoEspecifico)
+                ) {
+                    $datosImpuestoEsp = $i->datosImpuestoEspecifico;
+                    $xmlString .= '<DatosImpuestoEspecifico>';
+                    if (isset($datosImpuestoEsp->cantidadUnidadMedida)) {
+                        $xmlString .= '<CantidadUnidadMedida>' . $datosImpuestoEsp->cantidadUnidadMedida . '</CantidadUnidadMedida>';
+                    }
+                    if (isset($datosImpuestoEsp->porcentaje)) {
+                        $xmlString .= '<Porcentaje>' . $datosImpuestoEsp->porcentaje . '</Porcentaje>';
+                    }
+                    if (isset($datosImpuestoEsp->proporcion)) {
+                        $xmlString .= '<Proporcion>' . $datosImpuestoEsp->proporcion . '</Proporcion>';
+                    }
+                    if (isset($datosImpuestoEsp->volumenUnidadConsumo)) {
+                        $xmlString .= '<VolumenUnidadConsumo>' . $datosImpuestoEsp->volumenUnidadConsumo . '</VolumenUnidadConsumo>';
+                    }
+                    if (isset($datosImpuestoEsp->impuestoUnidad)) {
+                        $xmlString .= '<ImpuestoUnidad>' . $datosImpuestoEsp->impuestoUnidad . '</ImpuestoUnidad>';
+                    }
+                    $xmlString .= '</DatosImpuestoEspecifico>';
                 }
 
                 $xmlString .= '<Monto>' . $i->monto . '</Monto>';
@@ -437,15 +681,24 @@ function genXMLFe()
                 if (isset($i->exoneracion) && $i->exoneracion != "") {
                     $xmlString .= '
                     <Exoneracion>
-                        <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
-                        <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                        <TipoDocumentoEX1>' . $i->exoneracion->tipoDocumento . '</TipoDocumentoEX1>';
+                    if (isset($i->exoneracion->tipoDocumentoOtro) && !empty($i->exoneracion->tipoDocumentoOtro)) {
+                        $xmlString .= '<TipoDocumentoOTRO>' . $i->exoneracion->tipoDocumentoOtro . '</TipoDocumentoOTRO>';
+                    }
+                    $xmlString .= '<NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>';
+                    if (isset($i->exoneracion->numeroArticulo) && !empty($i->exoneracion->numeroArticulo)) {
+                        $xmlString .= '<Articulo>' . $i->exoneracion->numeroArticulo . '</Articulo>';
+                    }
+                    if (isset($i->exoneracion->numeroInciso) && !empty($i->exoneracion->numeroInciso)) {
+                        $xmlString .= '<Inciso>' . $i->exoneracion->numeroInciso . '</Inciso>';
+                    }
+                    $xmlString .= '<NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
                     if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
                         $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
                     }
                     $xmlString .= '
-                        <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
-                        <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
+                        <FechaEmisionEX>' . $i->exoneracion->fechaEmision . '</FechaEmisionEX>
+                        <TarifaExonerada>' . $i->exoneracion->tarifaExoneracion . '</TarifaExonerada>
                         <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
                     </Exoneracion>';
                 }
@@ -454,12 +707,8 @@ function genXMLFe()
             }
         }
 
-        if (isset($d->impuestoAsumidoEmisorFabrica) && $d->impuestoAsumidoEmisorFabrica != "") {
-            $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
-        }
-        if (isset($d->impuestoNeto) && $d->impuestoNeto != "") {
-            $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
-        }
+        $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
+        $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
         $xmlString .= '<MontoTotalLinea>' . $d->montoTotalLinea . '</MontoTotalLinea>';
         $xmlString .= '</LineaDetalle>';
         $l++;
@@ -509,6 +758,12 @@ function genXMLFe()
             <CodigoMoneda>' . $codMoneda . '</CodigoMoneda>
             <TipoCambio>' . $tipoCambio . '</TipoCambio>
         </CodigoTipoMoneda>';
+    } else {
+        $xmlString .= '
+    <CodigoTipoMoneda>
+        <CodigoMoneda>CRC</CodigoMoneda>
+        <TipoCambio>1</TipoCambio>
+    </CodigoTipoMoneda>';
     }
 
     if ($totalServGravados != '') {
@@ -648,65 +903,34 @@ function genXMLFe()
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
 
-    if ($infoRefeTipoDoc != '' && $infoRefeFechaEmision != '') {
-
-        $xmlString .= '
-    <InformacionReferencia>';
-
-        if (in_array($infoRefeTipoDoc, TIPODOCREFVALUES, true)) {
-            $xmlString .= '
-        <TipoDocIR>' . $infoRefeTipoDoc . '</TipoDocIR>';
-        } else {
-            grace_error("El parámetro infoRefeTipoDoc no cumple con la estructura establecida. infoRefeTipoDoc = " . $infoRefeTipoDoc);
-            return "El parámetro infoRefeTipoDoc no cumple con la estructura establecida.";
-        }
-
-        if ($infoRefeTipoDoc === '99') {
-            if (isset($infoRefeTipoDocOtro) && strlen($infoRefeTipoDocOtro) >= 5 && strlen($infoRefeTipoDocOtro) <= 100) {
-                $xmlString .= '
-        <TipoDocRefOTRO>' . htmlspecialchars($infoRefeTipoDocOtro) . '</TipoDocRefOTRO>';
-            } else {
-                grace_error("El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida. infoRefeTipoDocOtro = " . $infoRefeTipoDocOtro);
-                return "El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida.";
+    if (is_array($informacionReferencia) && count($informacionReferencia) > 0) {
+        foreach ($informacionReferencia as $ref) {
+            if (!empty($ref->tipoDoc) && !empty($ref->fechaEmision)) {
+                if (in_array($ref->tipoDoc, TIPODOCREFVALUES, true)) {
+                    $xmlString .= '<InformacionReferencia>';
+                    $xmlString .= '<TipoDocIR>' . $ref->tipoDoc . '</TipoDocIR>';
+                    if ($ref->tipoDoc === '99' && isset($ref->tipoDocOtro)) {
+                        $xmlString .= '<TipoDocRefOTRO>' . htmlspecialchars($ref->tipoDocOtro) . '</TipoDocRefOTRO>';
+                    }
+                    if (isset($ref->numero)) {
+                        $xmlString .= '<Numero>' . $ref->numero . '</Numero>';
+                    }
+                    $xmlString .= '<FechaEmisionIR>' . $ref->fechaEmision . '</FechaEmisionIR>';
+                    if (isset($ref->codigo)) {
+                        $xmlString .= '<Codigo>' . $ref->codigo . '</Codigo>';
+                        if ($ref->codigo === '99' && isset($ref->codigoOtro)) {
+                            $xmlString .= '<CodigoReferenciaOTRO>' . htmlspecialchars($ref->codigoOtro) . '</CodigoReferenciaOTRO>';
+                        }
+                    }
+                    if (isset($ref->razon)) {
+                        $xmlString .= '<Razon>' . $ref->razon . '</Razon>';
+                    }
+                    $xmlString .= '</InformacionReferencia>';
+                } else {
+                    grace_error("El parámetro tipoDoc no cumple con la estructura establecida. tipoDoc = " . $ref->tipoDoc);
+                }
             }
         }
-
-        if (isset($infoRefeNumero) && $infoRefeNumero != "") {
-            $xmlString .= '
-        <Numero>' . $infoRefeNumero . '</Numero>';
-        }
-
-        $xmlString .= '
-        <FechaEmisionIR>' . $infoRefeFechaEmision . '</FechaEmisionIR>';
-
-        if (isset($infoRefeCodigo) && $infoRefeCodigo != "") {
-            if (in_array($infoRefeCodigo, CODIDOREFVALUES, true)) {
-                $xmlString .= '
-            <Codigo>' . $infoRefeCodigo . '</Codigo>';
-            } else {
-                grace_error("El parámetro infoRefeCodigo no cumple con la estructura establecida. infoRefeCodigo = " . $infoRefeCodigo);
-                return "El parámetro infoRefeCodigo no cumple con la estructura establecida.";
-            }
-        }
-
-        if ($infoRefeCodigo === '99') {
-            if (isset($infoRefeCodigoOtro) && strlen($infoRefeCodigoOtro) >= 5 && strlen($infoRefeCodigoOtro) <= 100) {
-                $xmlString .= '
-        <CodigoReferenciaOTRO>' . htmlspecialchars($infoRefeCodigoOtro) . '</CodigoReferenciaOTRO>';
-            } else {
-                grace_error("El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida. infoRefeCodigoOTRO = " . $infoRefeCodigoOtro);
-                return "El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida.";
-            }
-        }
-
-        if (isset($infoRefeRazon) && $infoRefeRazon != "") {
-            $xmlString .= '
-        <Razon>' . $infoRefeRazon . '</Razon>';
-        }
-
-        $xmlString .= '
-    </InformacionReferencia>';
-
     }
 
     // JSON de ejemplo
@@ -739,41 +963,40 @@ function genXMLFe()
     //  ]
     //}
 
-    if (isset($otros) && !empty($otros)) {
-        $xmlString .= '<Otros>';
+    // Start Otros element
+    $xmlString .= '<Otros>';
 
-        // Handle OtroTexto elements
-        if (isset($otros->otroTexto)) {
-            $xmlString .= '<OtroTexto';
-            if (isset($otros->otroTexto->codigo)) {
-                $xmlString .= ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"';
+    // Handle multiple OtroTexto elements
+    if (isset($otros->otroTexto)) {
+        if (is_array($otros->otroTexto)) {
+            foreach ($otros->otroTexto as $otroTexto) {
+                $codigo = isset($otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otroTexto->codigo) . '"' : '';
+                $texto = isset($otroTexto->texto) ? htmlspecialchars($otroTexto->texto) : '';
+                $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
             }
-            $xmlString .= '>' . htmlspecialchars($otros->otroTexto->texto) . '</OtroTexto>';
+        } else {
+            $codigo = isset($otros->otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"' : '';
+            $texto = isset($otros->otroTexto->texto) ? htmlspecialchars($otros->otroTexto->texto) : '';
+            $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
         }
-
-        // Handle OtroContenido elements
-        if (isset($otros->otroContenido)) {
-            foreach ($otros->otroContenido as $item) {
-                $xmlString .= '<OtroContenido';
-                if (isset($item->codigo)) {
-                    $xmlString .= ' codigo="' . htmlspecialchars($item->codigo) . '"';
-                }
-                $xmlString .= '>';
-                if (isset($item->contenidoEstructurado)) {
-                    foreach ($item->contenidoEstructurado as $element => $content) {
-                        $xmlString .= '<' . $element . ' xmlns="https://www.grupoice.com">';
-                        foreach ($content as $nestedElement => $nestedContent) {
-                            $xmlString .= '<' . $nestedElement . '>' . htmlspecialchars($nestedContent) . '</' . $nestedElement . '>';
-                        }
-                        $xmlString .= '</' . $element . '>';
-                    }
-                }
-                $xmlString .= '</OtroContenido>';
-            }
-        }
-
-        $xmlString .= '</Otros>';
     }
+
+    // Handle multiple OtroContenido elements
+    if (isset($otros->otroContenido) && is_array($otros->otroContenido)) {
+        foreach ($otros->otroContenido as $otroContenido) {
+            $codigo = isset($otroContenido->codigo) ? ' codigo="' . htmlspecialchars($otroContenido->codigo) . '"' : '';
+            // Serialize structured content as JSON string, or use a plain string
+            $contenido = '';
+            if (isset($otroContenido->contenidoEstructurado)) {
+                // Convert object/array to JSON string
+                $contenido = htmlspecialchars(json_encode($otroContenido->contenidoEstructurado, JSON_UNESCAPED_UNICODE));
+            }
+            $xmlString .= '<OtroContenido' . $codigo . '>' . $contenido . '</OtroContenido>';
+        }
+    }
+
+    $xmlString .= '</Otros>';
+
 
     // XML Resultante
     //<Otros>
@@ -874,18 +1097,11 @@ function genXMLNC()
     $totalOtrosCargos = params_get("totalOtrosCargos");
     $totalComprobante = params_get("total_comprobante");
 
-    $otros = params_get("otros");
-    $otrosType = params_get("otrosType");
-    $infoRefeTipoDoc = params_get("infoRefeTipoDoc");
-    $infoRefeTipoDocOtro = params_get("infoRefeTipoDocOTRO");
-    $infoRefeNumero = params_get("infoRefeNumero");
-    $infoRefeFechaEmision = params_get("infoRefeFechaEmision");
-    $infoRefeCodigo = params_get("infoRefeCodigo");
-    $infoRefeCodigoOtro = params_get("infoRefeCodigoOTRO");
-    $infoRefeRazon = params_get("infoRefeRazon");
+    $otros = json_decode(params_get('otros'));
 
     // Detalles de la compra
     $detalles = json_decode(params_get("detalles"));
+    $informacionReferencia = json_decode(params_get("informacion_referencia"));
     $otrosCargos = json_decode(params_get("otrosCargos"));
     $mediosPago = json_decode(params_get("medios_pago"));
     // Resumen
@@ -1096,84 +1312,182 @@ function genXMLNC()
             $xmlString .= '<PartidaArancelaria>' . $d->partidaArancelaria . '</PartidaArancelaria>';
         }
 
-        if (isset($d->codigo) && $d->codigo != "") {
+        if (isset($d->codigoCABYS) && $d->codigoCABYS != "") {
             $xmlString .= '
-            <Codigo>' . $d->codigo . '</Codigo>';
+            <CodigoCABYS>' . $d->codigoCABYS . '</CodigoCABYS>';
         }
 
-        if (isset($d->codigoComercial) && is_string($d->codigoComercial) && strlen($d->codigoComercial) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->codigoComercial) > 5) {
-                error_log("codigoComercial: " . count($d->codigoComercial) . " is greater than 5");
-            }
-            $d->codigoComercial = array_slice($d->codigoComercial, 0, 5);
-            foreach ($d->codigoComercial as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
-                }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
-            }
-        }
+        if (isset($d->codigoComercial) && !empty($d->codigoComercial)) {
+            // Convertir el objeto $d->codigoComercial en un array
+            $codigoComercialArray = (array)$d->codigoComercial;
 
-        if (isset($d->codigoComercialLinea) && $d->codigoComercialLinea != "" && $d->codigoComercialLinea != 0) {
-            foreach ($d->codigoComercialLinea as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
+            // Delimitar el array a solo 5 elementos
+            if (count($codigoComercialArray) > 5) {
+                error_log("codigoComercial: " . count($codigoComercialArray) . " is greater than 5");
+            }
+            $codigoComercialArray = array_slice($codigoComercialArray, 0, 5);
+
+            // Iterar sobre los elementos del array
+            foreach ($codigoComercialArray as $codigos) {
+                $c = (array)$codigos;
+                // Verificar si el elemento es un array asociativo
+                if (is_array($c) && isset($c['tipo']) && $c['tipo'] != "" && isset($c['codigo']) && $c['codigo'] != "") {
                     $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
+                        <CodigoComercial>
+                            <Tipo>' . $c['tipo'] . '</Tipo>
+                            <Codigo>' . $c['codigo'] . '</Codigo>
+                        </CodigoComercial>';
                 }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
             }
         }
 
         $xmlString .= '
             <Cantidad>' . $d->cantidad . '</Cantidad>
             <UnidadMedida>' . $d->unidadMedida . '</UnidadMedida>';
-        if (isset($c->codigo) && $c->codigo != "") {
+        if (isset($d->tipoTransaccion) && $d->tipoTransaccion != "") {
+            $xmlString .= '
+                <TipoTransaccion>' . $d->tipoTransaccion . '</TipoTransaccion>';
+        }
+        if (isset($d->unidadMedidaComercial) && $d->unidadMedidaComercial != "") {
             $xmlString .= '
                 <UnidadMedidaComercial>' . $d->unidadMedidaComercial . '</UnidadMedidaComercial>';
         }
         $xmlString .= '
-            <Detalle>' . $d->detalle . '</Detalle>
+            <Detalle>' . $d->detalle . '</Detalle>';
+        if (isset($d->numeroVINoSerie) && $d->numeroVINoSerie != "") {
+            $xmlString .= '<NumeroVINoSerie>' . $d->numeroVINoSerie . '</NumeroVINoSerie>';
+        }
+
+        if (isset($d->registroMedicamento) && $d->registroMedicamento !== "") {
+            $xmlString .= '<RegistroMedicamento>' . htmlspecialchars($d->registroMedicamento) . '</RegistroMedicamento>';
+        }
+        if (isset($d->formaFarmaceutica) && $d->formaFarmaceutica !== "") {
+            $xmlString .= '<FormaFarmaceutica>' . htmlspecialchars($d->formaFarmaceutica) . '</FormaFarmaceutica>';
+        }
+
+        if (isset($d->detalleSurtido) && is_array($d->detalleSurtido) && count($d->detalleSurtido) > 0) {
+            $xmlString .= '<DetalleSurtido>';
+            $lineas = array_slice($d->detalleSurtido, 0, 20);
+            foreach ($lineas as $linea) {
+                $xmlString .= '<LineaDetalleSurtido>';
+                $xmlString .= '<CodigoCABYSSurtido>' . $linea->codigoCABYSSurtido . '</CodigoCABYSSurtido>';
+                if (isset($linea->codigoComercialSurtido) && is_array($linea->codigoComercialSurtido)) {
+                    $codigos = array_slice($linea->codigoComercialSurtido, 0, 5);
+                    foreach ($codigos as $codigo) {
+                        $xmlString .= '<CodigoComercialSurtido>';
+                        $xmlString .= '<TipoSurtido>' . $codigo->tipoSurtido . '</TipoSurtido>';
+                        $xmlString .= '<CodigoSurtido>' . $codigo->codigoSurtido . '</CodigoSurtido>';
+                        $xmlString .= '</CodigoComercialSurtido>';
+                    }
+                }
+                $xmlString .= '<CantidadSurtido>' . $linea->cantidadSurtido . '</CantidadSurtido>';
+                $xmlString .= '<UnidadMedidaSurtido>' . $linea->unidadMedidaSurtido . '</UnidadMedidaSurtido>';
+                if (isset($linea->unidadMedidaComercialSurtido)) {
+                    $xmlString .= '<UnidadMedidaComercialSurtido>' . $linea->unidadMedidaComercialSurtido . '</UnidadMedidaComercialSurtido>';
+                }
+                $xmlString .= '<DetalleSurtido>' . $linea->detalleSurtido . '</DetalleSurtido>';
+                $xmlString .= '<PrecioUnitarioSurtido>' . $linea->precioUnitarioSurtido . '</PrecioUnitarioSurtido>';
+                $xmlString .= '<MontoTotalSurtido>' . $linea->montoTotalSurtido . '</MontoTotalSurtido>';
+                if (isset($linea->descuentoSurtido) && is_array($linea->descuentoSurtido)) {
+                    $descuentos = array_slice($linea->descuentoSurtido, 0, 5);
+                    foreach ($descuentos as $desc) {
+                        $xmlString .= '<DescuentoSurtido>';
+                        $xmlString .= '<MontoDescuentoSurtido>' . $desc->montoDescuentoSurtido . '</MontoDescuentoSurtido>';
+                        $xmlString .= '<CodigoDescuentoSurtido>' . $desc->codigoDescuentoSurtido . '</CodigoDescuentoSurtido>';
+                        if (isset($desc->descuentoSurtidoOtros)) {
+                            $xmlString .= '<DescuentoSurtidoOtros>' . $desc->descuentoSurtidoOtros . '</DescuentoSurtidoOtros>';
+                        }
+                        $xmlString .= '</DescuentoSurtido>';
+                    }
+                }
+                $xmlString .= '<SubTotalSurtido>' . $linea->subTotalSurtido . '</SubTotalSurtido>';
+                if (isset($linea->ivaCobradoFabricaSurtido)) {
+                    $xmlString .= '<IVACobradoFabricaSurtido>' . $linea->ivaCobradoFabricaSurtido . '</IVACobradoFabricaSurtido>';
+                }
+                $xmlString .= '<BaseImponibleSurtido>' . $linea->baseImponibleSurtido . '</BaseImponibleSurtido>';
+                if (isset($linea->impuestoSurtido) && is_array($linea->impuestoSurtido)) {
+                    $impuestos = array_slice($linea->impuestoSurtido, 0, 1000);
+                    foreach ($impuestos as $imp) {
+                        $xmlString .= '<ImpuestoSurtido>';
+                        $xmlString .= '<CodigoImpuestoSurtido>' . $imp->codigoImpuestoSurtido . '</CodigoImpuestoSurtido>';
+                        if (isset($imp->codigoImpuestoOTROSurtido)) {
+                            $xmlString .= '<CodigoImpuestoOTROSurtido>' . $imp->codigoImpuestoOTROSurtido . '</CodigoImpuestoOTROSurtido>';
+                        }
+                        if (isset($imp->codigoTarifaIVASurtido)) {
+                            $xmlString .= '<CodigoTarifaIVASurtido>' . $imp->codigoTarifaIVASurtido . '</CodigoTarifaIVASurtido>';
+                        }
+                        if (isset($imp->tarifaSurtido)) {
+                            $xmlString .= '<TarifaSurtido>' . $imp->tarifaSurtido . '</TarifaSurtido>';
+                        }
+                        if (isset($imp->datosImpuestoEspecificoSurtido)) {
+                            $e = $imp->datosImpuestoEspecificoSurtido;
+                            $xmlString .= '<DatosImpuestoEspecificoSurtido>';
+                            if (isset($e->cantidadUnidadMedidaSurtido)) {
+                                $xmlString .= '<CantidadUnidadMedidaSurtido>' . $e->cantidadUnidadMedidaSurtido . '</CantidadUnidadMedidaSurtido>';
+                            }
+                            if (isset($e->porcentajeSurtido)) {
+                                $xmlString .= '<PorcentajeSurtido>' . $e->porcentajeSurtido . '</PorcentajeSurtido>';
+                            }
+                            if (isset($e->proporcionSurtido)) {
+                                $xmlString .= '<ProporcionSurtido>' . $e->proporcionSurtido . '</ProporcionSurtido>';
+                            }
+                            if (isset($e->volumenUnidadConsumoSurtido)) {
+                                $xmlString .= '<VolumenUnidadConsumoSurtido>' . $e->volumenUnidadConsumoSurtido . '</VolumenUnidadConsumoSurtido>';
+                            }
+                            if (isset($e->impuestoUnidadSurtido)) {
+                                $xmlString .= '<ImpuestoUnidadSurtido>' . $e->impuestoUnidadSurtido . '</ImpuestoUnidadSurtido>';
+                            }
+                            $xmlString .= '</DatosImpuestoEspecificoSurtido>';
+                        }
+                        $xmlString .= '<MontoImpuestoSurtido>' . $imp->montoImpuestoSurtido . '</MontoImpuestoSurtido>';
+                        $xmlString .= '</ImpuestoSurtido>';
+                    }
+                }
+                $xmlString .= '</LineaDetalleSurtido>';
+            }
+            $xmlString .= '</DetalleSurtido>';
+        }
+
+        $xmlString .= '
             <PrecioUnitario>' . $d->precioUnitario . '</PrecioUnitario>
             <MontoTotal>' . $d->montoTotal . '</MontoTotal>';
 
-        if (isset($d->descuento) && is_string($d->descuento) && strlen($d->descuento) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->descuento) > 5) {
-                error_log("descuento: " . count($d->descuento) . " is greater than 5");
-            }
-            $d->descuento = array_slice($d->descuento, 0, 5);
-            foreach ($d->descuento as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
-                    $xmlString .= '<Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
-                }
-            }
-        }
+        if (isset($d->descuento) && !empty($d->descuento)) {
+            $descuentoArray = (array)$d->descuento;
 
-        if (isset($d->descuentoLinea) && $d->descuentoLinea != "" && $d->descuentoLinea != 0) {
-            foreach ($d->descuentoLinea as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
+            if (count($descuentoArray) > 5) {
+                error_log("descuento: " . count($descuentoArray) . " is greater than 5");
+            }
+            $descuentoArray = array_slice($descuentoArray, 0, 5);
+
+            foreach ($descuentoArray as $descuentos) {
+                $c = (array)$descuentos;
+                if (
+                    is_array($c) &&
+                    isset($c['montoDescuento']) && $c['montoDescuento'] !== "" &&
+                    isset($c['codigoDescuento']) && $c['codigoDescuento'] !== ""
+                ) {
                     $xmlString .= '
-                    <Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
+                <Descuento>
+                    <MontoDescuento>' . $c['montoDescuento'] . '</MontoDescuento>
+                    <CodigoDescuento>' . $c['codigoDescuento'] . '</CodigoDescuento>';
+                    // CodigoDescuentoOTRO: obligatorio si codigoDescuento == "99" y existe el campo
+                    if (
+                        isset($c['codigoDescuento']) && $c['codigoDescuento'] === "99" &&
+                        isset($c['codigoDescuentoOTRO']) &&
+                        strlen($c['codigoDescuentoOTRO']) >= 5 && strlen($c['codigoDescuentoOTRO']) <= 100
+                    ) {
+                        $xmlString .= '<CodigoDescuentoOTRO>' . htmlspecialchars($c['codigoDescuentoOTRO']) . '</CodigoDescuentoOTRO>';
+                    }
+                    // NaturalezaDescuento: minOccurs=0, longitud 3-80
+                    if (
+                        isset($c['naturalezaDescuento']) &&
+                        strlen($c['naturalezaDescuento']) >= 3 && strlen($c['naturalezaDescuento']) <= 80
+                    ) {
+                        $xmlString .= '<NaturalezaDescuento>' . htmlspecialchars($c['naturalezaDescuento']) . '</NaturalezaDescuento>';
+                    }
+                    $xmlString .= '
+                </Descuento>';
                 }
             }
         }
@@ -1181,7 +1495,7 @@ function genXMLNC()
         $xmlString .= '<SubTotal>' . $d->subTotal . '</SubTotal>';
 
         if (isset($d->IVACobradoFabrica) && $d->IVACobradoFabrica != "") {
-            $xmlString .= '<IVACobradoFabrica>' . $d->$IVACobradoFabrica . '</IVACobradoFabrica>';
+            $xmlString .= '<IVACobradoFabrica>' . $d->IVACobradoFabrica . '</IVACobradoFabrica>';
         }
 
         if (isset($d->baseImponible) && $d->baseImponible != "") {
@@ -1192,8 +1506,16 @@ function genXMLNC()
                 $xmlString .= '<Impuesto>
                 <Codigo>' . $i->codigo . '</Codigo>';
 
+                // Add <CodigoImpuestoOTRO> if required
+                if (
+                    isset($i->codigo) && $i->codigo == "99" &&
+                    isset($i->codigoImpuestoOtro) && !empty($i->codigoImpuestoOtro)
+                ) {
+                    $xmlString .= '<CodigoImpuestoOTRO>' . $i->codigoImpuestoOtro . '</CodigoImpuestoOTRO>';
+                }
+
                 if (isset($i->codigoTarifa) && $i->codigoTarifa != "") {
-                    $xmlString .= '<CodigoTarifa>' . $i->codigoTarifa . '</CodigoTarifa>';
+                    $xmlString .= '<CodigoTarifaIVA>' . $i->codigoTarifa . '</CodigoTarifaIVA>';
                 }
 
                 if (isset($i->tarifa) && $i->tarifa != "") {
@@ -1201,7 +1523,33 @@ function genXMLNC()
                 }
 
                 if (isset($i->factorIVA) && $i->factorIVA != "") {
-                    $xmlString .= '<FactorIVA>' . $i->factorIVA . '</FactorIVA>';
+                    $xmlString .= '<FactorCalculoIVA>' . $i->factorIVA . '</FactorCalculoIVA>';
+                }
+
+                if (
+                    isset($i->codigo) &&
+                    in_array($i->codigo, ["03", "04", "05", "06"]) &&
+                    isset($i->datosImpuestoEspecifico) &&
+                    is_object($i->datosImpuestoEspecifico)
+                ) {
+                    $datosImpuestoEsp = $i->datosImpuestoEspecifico;
+                    $xmlString .= '<DatosImpuestoEspecifico>';
+                    if (isset($datosImpuestoEsp->cantidadUnidadMedida)) {
+                        $xmlString .= '<CantidadUnidadMedida>' . $datosImpuestoEsp->cantidadUnidadMedida . '</CantidadUnidadMedida>';
+                    }
+                    if (isset($datosImpuestoEsp->porcentaje)) {
+                        $xmlString .= '<Porcentaje>' . $datosImpuestoEsp->porcentaje . '</Porcentaje>';
+                    }
+                    if (isset($datosImpuestoEsp->proporcion)) {
+                        $xmlString .= '<Proporcion>' . $datosImpuestoEsp->proporcion . '</Proporcion>';
+                    }
+                    if (isset($datosImpuestoEsp->volumenUnidadConsumo)) {
+                        $xmlString .= '<VolumenUnidadConsumo>' . $datosImpuestoEsp->volumenUnidadConsumo . '</VolumenUnidadConsumo>';
+                    }
+                    if (isset($datosImpuestoEsp->impuestoUnidad)) {
+                        $xmlString .= '<ImpuestoUnidad>' . $datosImpuestoEsp->impuestoUnidad . '</ImpuestoUnidad>';
+                    }
+                    $xmlString .= '</DatosImpuestoEspecifico>';
                 }
 
                 $xmlString .= '<Monto>' . $i->monto . '</Monto>';
@@ -1213,15 +1561,24 @@ function genXMLNC()
                 if (isset($i->exoneracion) && $i->exoneracion != "") {
                     $xmlString .= '
                     <Exoneracion>
-                        <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
-                        <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                        <TipoDocumentoEX1>' . $i->exoneracion->tipoDocumento . '</TipoDocumentoEX1>';
+                    if (isset($i->exoneracion->tipoDocumentoOtro) && !empty($i->exoneracion->tipoDocumentoOtro)) {
+                        $xmlString .= '<TipoDocumentoOTRO>' . $i->exoneracion->tipoDocumentoOtro . '</TipoDocumentoOTRO>';
+                    }
+                    $xmlString .= '<NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>';
+                    if (isset($i->exoneracion->numeroArticulo) && !empty($i->exoneracion->numeroArticulo)) {
+                        $xmlString .= '<Articulo>' . $i->exoneracion->numeroArticulo . '</Articulo>';
+                    }
+                    if (isset($i->exoneracion->numeroInciso) && !empty($i->exoneracion->numeroInciso)) {
+                        $xmlString .= '<Inciso>' . $i->exoneracion->numeroInciso . '</Inciso>';
+                    }
+                    $xmlString .= '<NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
                     if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
                         $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
                     }
                     $xmlString .= '
-                        <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
-                        <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
+                        <FechaEmisionEX>' . $i->exoneracion->fechaEmision . '</FechaEmisionEX>
+                        <TarifaExonerada>' . $i->exoneracion->tarifaExoneracion . '</TarifaExonerada>
                         <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
                     </Exoneracion>';
                 }
@@ -1232,9 +1589,7 @@ function genXMLNC()
         if (isset($d->impuestoAsumidoEmisorFabrica) && $d->impuestoAsumidoEmisorFabrica != "") {
             $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
         }
-        if (isset($d->impuestoNeto) && $d->impuestoNeto != "") {
-            $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
-        }
+        $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
         $xmlString .= '<MontoTotalLinea>' . $d->montoTotalLinea . '</MontoTotalLinea>';
         $xmlString .= '</LineaDetalle>';
         $l++;
@@ -1285,6 +1640,12 @@ function genXMLNC()
             <CodigoMoneda>' . $codMoneda . '</CodigoMoneda>
             <TipoCambio>' . $tipoCambio . '</TipoCambio>
         </CodigoTipoMoneda>';
+    } else {
+        $xmlString .= '
+    <CodigoTipoMoneda>
+        <CodigoMoneda>CRC</CodigoMoneda>
+        <TipoCambio>1</TipoCambio>
+    </CodigoTipoMoneda>';
     }
 
     if ($totalServGravados != '') {
@@ -1424,61 +1785,35 @@ function genXMLNC()
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
 
-    $xmlString .= '
-    <InformacionReferencia>';
-    if (in_array($infoRefeTipoDoc, TIPODOCREFVALUES, true)) {
-        $xmlString .= '
-        <TipoDocIR>' . $infoRefeTipoDoc . '</TipoDocIR>';
-    } else {
-        grace_error("El parámetro infoRefeTipoDoc no cumple con la estructura establecida. infoRefeTipoDoc = " . $infoRefeTipoDoc);
-        return "El parámetro infoRefeTipoDoc no cumple con la estructura establecida.";
-    }
-
-    if ($infoRefeTipoDoc === '99') {
-        if (isset($infoRefeTipoDocOtro) && strlen($infoRefeTipoDocOtro) >= 5 && strlen($infoRefeTipoDocOtro) <= 100) {
-            $xmlString .= '
-        <TipoDocRefOTRO>' . htmlspecialchars($infoRefeTipoDocOtro) . '</TipoDocRefOTRO>';
-        } else {
-            grace_error("El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida. infoRefeTipoDocOtro = " . $infoRefeTipoDocOtro);
-            return "El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida.";
+    if (is_array($informacionReferencia) && count($informacionReferencia) > 0) {
+        foreach ($informacionReferencia as $ref) {
+            if (!empty($ref->tipoDoc) && !empty($ref->fechaEmision)) {
+                if (in_array($ref->tipoDoc, TIPODOCREFVALUES, true)) {
+                    $xmlString .= '<InformacionReferencia>';
+                    $xmlString .= '<TipoDocIR>' . $ref->tipoDoc . '</TipoDocIR>';
+                    if ($ref->tipoDoc === '99' && isset($ref->tipoDocOtro)) {
+                        $xmlString .= '<TipoDocRefOTRO>' . htmlspecialchars($ref->tipoDocOtro) . '</TipoDocRefOTRO>';
+                    }
+                    if (isset($ref->numero)) {
+                        $xmlString .= '<Numero>' . $ref->numero . '</Numero>';
+                    }
+                    $xmlString .= '<FechaEmisionIR>' . $ref->fechaEmision . '</FechaEmisionIR>';
+                    if (isset($ref->codigo)) {
+                        $xmlString .= '<Codigo>' . $ref->codigo . '</Codigo>';
+                        if ($ref->codigo === '99' && isset($ref->codigoOtro)) {
+                            $xmlString .= '<CodigoReferenciaOTRO>' . htmlspecialchars($ref->codigoOtro) . '</CodigoReferenciaOTRO>';
+                        }
+                    }
+                    if (isset($ref->razon)) {
+                        $xmlString .= '<Razon>' . $ref->razon . '</Razon>';
+                    }
+                    $xmlString .= '</InformacionReferencia>';
+                } else {
+                    grace_error("El parámetro tipoDoc no cumple con la estructura establecida. tipoDoc = " . $ref->tipoDoc);
+                }
+            }
         }
     }
-
-    if (isset($infoRefeNumero) && $infoRefeNumero != "") {
-        $xmlString .= '
-        <Numero>' . $infoRefeNumero . '</Numero>';
-    }
-
-    $xmlString .= '
-        <FechaEmisionIR>' . $infoRefeFechaEmision . '</FechaEmisionIR>';
-
-    if (isset($infoRefeCodigo) && $infoRefeCodigo != "") {
-        if (in_array($infoRefeCodigo, CODIDOREFVALUES, true)) {
-            $xmlString .= '
-        <Codigo>' . $infoRefeCodigo . '</Codigo>';
-        } else {
-            grace_error("El parámetro infoRefeCodigo no cumple con la estructura establecida. infoRefeCodigo = " . $infoRefeCodigo);
-            return "El parámetro infoRefeCodigo no cumple con la estructura establecida.";
-        }
-    }
-
-    if ($infoRefeCodigo === '99') {
-        if (isset($infoRefeCodigoOtro) && strlen($infoRefeCodigoOtro) >= 5 && strlen($infoRefeCodigoOtro) <= 100) {
-            $xmlString .= '
-        <CodigoReferenciaOTRO>' . htmlspecialchars($infoRefeCodigoOtro) . '</CodigoReferenciaOTRO>';
-        } else {
-            grace_error("El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida. infoRefeCodigoOTRO = " . $infoRefeCodigoOtro);
-            return "El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida.";
-        }
-    }
-
-    if (isset($infoRefeRazon) && $infoRefeRazon != "") {
-        $xmlString .= '
-        <Razon>' . $infoRefeRazon . '</Razon>';
-    }
-
-    $xmlString .= '
-    </InformacionReferencia>';
 
     // JSON de ejemplo
     //    {
@@ -1510,41 +1845,45 @@ function genXMLNC()
     //  ]
     //}
 
-    if (isset($otros) && !empty($otros)) {
-        $xmlString .= '<Otros>';
+    // Start Otros element
+    $xmlString .= '<Otros>';
 
-        // Handle OtroTexto elements
-        if (isset($otros->otroTexto)) {
-            $xmlString .= '<OtroTexto';
-            if (isset($otros->otroTexto->codigo)) {
-                $xmlString .= ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"';
+    // Handle multiple OtroTexto elements
+    if (isset($otros->otroTexto)) {
+        if (is_array($otros->otroTexto)) {
+            foreach ($otros->otroTexto as $otroTexto) {
+                $codigo = isset($otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otroTexto->codigo) . '"' : '';
+                $texto = isset($otroTexto->texto) ? htmlspecialchars($otroTexto->texto) : '';
+                $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
             }
-            $xmlString .= '>' . htmlspecialchars($otros->otroTexto->texto) . '</OtroTexto>';
+        } else {
+            $codigo = isset($otros->otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"' : '';
+            $texto = isset($otros->otroTexto->texto) ? htmlspecialchars($otros->otroTexto->texto) : '';
+            $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
         }
-
-        // Handle OtroContenido elements
-        if (isset($otros->otroContenido)) {
-            foreach ($otros->otroContenido as $item) {
-                $xmlString .= '<OtroContenido';
-                if (isset($item->codigo)) {
-                    $xmlString .= ' codigo="' . htmlspecialchars($item->codigo) . '"';
-                }
-                $xmlString .= '>';
-                if (isset($item->contenidoEstructurado)) {
-                    foreach ($item->contenidoEstructurado as $element => $content) {
-                        $xmlString .= '<' . $element . ' xmlns="https://www.grupoice.com">';
-                        foreach ($content as $nestedElement => $nestedContent) {
-                            $xmlString .= '<' . $nestedElement . '>' . htmlspecialchars($nestedContent) . '</' . $nestedElement . '>';
-                        }
-                        $xmlString .= '</' . $element . '>';
-                    }
-                }
-                $xmlString .= '</OtroContenido>';
-            }
-        }
-
-        $xmlString .= '</Otros>';
     }
+
+    // Handle multiple OtroContenido elements
+    if (isset($otros->otroContenido) && is_array($otros->otroContenido)) {
+        foreach ($otros->otroContenido as $otroContenido) {
+            $codigo = isset($otroContenido->codigo) ? ' codigo="' . htmlspecialchars($otroContenido->codigo) . '"' : '';
+            $contenido = '';
+            if (isset($otroContenido->contenidoEstructurado) && is_object($otroContenido->contenidoEstructurado)) {
+                foreach ($otroContenido->contenidoEstructurado as $tag => $data) {
+                    $contenido .= '<' . $tag . '>';
+                    if (is_object($data)) {
+                        foreach ($data as $k => $v) {
+                            $contenido .= '<' . $k . '>' . htmlspecialchars($v) . '</' . $k . '>';
+                        }
+                    }
+                    $contenido .= '</' . $tag . '>';
+                }
+            }
+            $xmlString .= '<OtroContenido' . $codigo . '>' . $contenido . '</OtroContenido>';
+        }
+    }
+
+    $xmlString .= '</Otros>';
 
     // XML Resultante
     //<Otros>
@@ -1645,18 +1984,11 @@ function genXMLND()
     $totalIVADevuelto = params_get("totalIVADevuelto");
     $totalOtrosCargos = params_get("totalOtrosCargos");
     $totalComprobante = params_get("total_comprobante");
-    $otros = params_get("otros");
-    $otrosType = params_get("otrosType");
-    $infoRefeTipoDoc = params_get("infoRefeTipoDoc");
-    $infoRefeTipoDocOtro = params_get("infoRefeTipoDocOTRO");
-    $infoRefeNumero = params_get("infoRefeNumero");
-    $infoRefeFechaEmision = params_get("infoRefeFechaEmision");
-    $infoRefeCodigo = params_get("infoRefeCodigo");
-    $infoRefeCodigoOtro = params_get("infoRefeCodigoOTRO");
-    $infoRefeRazon = params_get("infoRefeRazon");
+    $otros = json_decode(params_get('otros'));
 
     // Detalles de la compra
     $detalles = json_decode(params_get("detalles"));
+    $informacionReferencia = json_decode(params_get("informacion_referencia"));
     $otrosCargos = json_decode(params_get("otrosCargos"));
     $mediosPago = json_decode(params_get("medios_pago"));
     // Resumen
@@ -1866,84 +2198,182 @@ function genXMLND()
             $xmlString .= '<PartidaArancelaria>' . $d->partidaArancelaria . '</PartidaArancelaria>';
         }
 
-        if (isset($d->codigo) && $d->codigo != "") {
+        if (isset($d->codigoCABYS) && $d->codigoCABYS != "") {
             $xmlString .= '
-            <Codigo>' . $d->codigo . '</Codigo>';
+            <CodigoCABYS>' . $d->codigoCABYS . '</CodigoCABYS>';
         }
 
-        if (isset($d->codigoComercial) && is_string($d->codigoComercial) && strlen($d->codigoComercial) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->codigoComercial) > 5) {
-                error_log("codigoComercial: " . count($d->codigoComercial) . " is greater than 5");
-            }
-            $d->codigoComercial = array_slice($d->codigoComercial, 0, 5);
-            foreach ($d->codigoComercial as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
-                }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
-            }
-        }
+        if (isset($d->codigoComercial) && !empty($d->codigoComercial)) {
+            // Convertir el objeto $d->codigoComercial en un array
+            $codigoComercialArray = (array)$d->codigoComercial;
 
-        if (isset($d->codigoComercialLinea) && $d->codigoComercialLinea != "" && $d->codigoComercialLinea != 0) {
-            foreach ($d->codigoComercialLinea as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
+            // Delimitar el array a solo 5 elementos
+            if (count($codigoComercialArray) > 5) {
+                error_log("codigoComercial: " . count($codigoComercialArray) . " is greater than 5");
+            }
+            $codigoComercialArray = array_slice($codigoComercialArray, 0, 5);
+
+            // Iterar sobre los elementos del array
+            foreach ($codigoComercialArray as $codigos) {
+                $c = (array)$codigos;
+                // Verificar si el elemento es un array asociativo
+                if (is_array($c) && isset($c['tipo']) && $c['tipo'] != "" && isset($c['codigo']) && $c['codigo'] != "") {
                     $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
+                        <CodigoComercial>
+                            <Tipo>' . $c['tipo'] . '</Tipo>
+                            <Codigo>' . $c['codigo'] . '</Codigo>
+                        </CodigoComercial>';
                 }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
             }
         }
 
         $xmlString .= '
             <Cantidad>' . $d->cantidad . '</Cantidad>
             <UnidadMedida>' . $d->unidadMedida . '</UnidadMedida>';
-        if (isset($c->codigo) && $c->codigo != "") {
+        if (isset($d->tipoTransaccion) && $d->tipoTransaccion != "") {
+            $xmlString .= '
+                <TipoTransaccion>' . $d->tipoTransaccion . '</TipoTransaccion>';
+        }
+        if (isset($d->unidadMedidaComercial) && $d->unidadMedidaComercial != "") {
             $xmlString .= '
                 <UnidadMedidaComercial>' . $d->unidadMedidaComercial . '</UnidadMedidaComercial>';
         }
         $xmlString .= '
-            <Detalle>' . $d->detalle . '</Detalle>
+            <Detalle>' . $d->detalle . '</Detalle>';
+        if (isset($d->numeroVINoSerie) && $d->numeroVINoSerie != "") {
+            $xmlString .= '<NumeroVINoSerie>' . $d->numeroVINoSerie . '</NumeroVINoSerie>';
+        }
+
+        if (isset($d->registroMedicamento) && $d->registroMedicamento !== "") {
+            $xmlString .= '<RegistroMedicamento>' . htmlspecialchars($d->registroMedicamento) . '</RegistroMedicamento>';
+        }
+        if (isset($d->formaFarmaceutica) && $d->formaFarmaceutica !== "") {
+            $xmlString .= '<FormaFarmaceutica>' . htmlspecialchars($d->formaFarmaceutica) . '</FormaFarmaceutica>';
+        }
+
+        if (isset($d->detalleSurtido) && is_array($d->detalleSurtido) && count($d->detalleSurtido) > 0) {
+            $xmlString .= '<DetalleSurtido>';
+            $lineas = array_slice($d->detalleSurtido, 0, 20);
+            foreach ($lineas as $linea) {
+                $xmlString .= '<LineaDetalleSurtido>';
+                $xmlString .= '<CodigoCABYSSurtido>' . $linea->codigoCABYSSurtido . '</CodigoCABYSSurtido>';
+                if (isset($linea->codigoComercialSurtido) && is_array($linea->codigoComercialSurtido)) {
+                    $codigos = array_slice($linea->codigoComercialSurtido, 0, 5);
+                    foreach ($codigos as $codigo) {
+                        $xmlString .= '<CodigoComercialSurtido>';
+                        $xmlString .= '<TipoSurtido>' . $codigo->tipoSurtido . '</TipoSurtido>';
+                        $xmlString .= '<CodigoSurtido>' . $codigo->codigoSurtido . '</CodigoSurtido>';
+                        $xmlString .= '</CodigoComercialSurtido>';
+                    }
+                }
+                $xmlString .= '<CantidadSurtido>' . $linea->cantidadSurtido . '</CantidadSurtido>';
+                $xmlString .= '<UnidadMedidaSurtido>' . $linea->unidadMedidaSurtido . '</UnidadMedidaSurtido>';
+                if (isset($linea->unidadMedidaComercialSurtido)) {
+                    $xmlString .= '<UnidadMedidaComercialSurtido>' . $linea->unidadMedidaComercialSurtido . '</UnidadMedidaComercialSurtido>';
+                }
+                $xmlString .= '<DetalleSurtido>' . $linea->detalleSurtido . '</DetalleSurtido>';
+                $xmlString .= '<PrecioUnitarioSurtido>' . $linea->precioUnitarioSurtido . '</PrecioUnitarioSurtido>';
+                $xmlString .= '<MontoTotalSurtido>' . $linea->montoTotalSurtido . '</MontoTotalSurtido>';
+                if (isset($linea->descuentoSurtido) && is_array($linea->descuentoSurtido)) {
+                    $descuentos = array_slice($linea->descuentoSurtido, 0, 5);
+                    foreach ($descuentos as $desc) {
+                        $xmlString .= '<DescuentoSurtido>';
+                        $xmlString .= '<MontoDescuentoSurtido>' . $desc->montoDescuentoSurtido . '</MontoDescuentoSurtido>';
+                        $xmlString .= '<CodigoDescuentoSurtido>' . $desc->codigoDescuentoSurtido . '</CodigoDescuentoSurtido>';
+                        if (isset($desc->descuentoSurtidoOtros)) {
+                            $xmlString .= '<DescuentoSurtidoOtros>' . $desc->descuentoSurtidoOtros . '</DescuentoSurtidoOtros>';
+                        }
+                        $xmlString .= '</DescuentoSurtido>';
+                    }
+                }
+                $xmlString .= '<SubTotalSurtido>' . $linea->subTotalSurtido . '</SubTotalSurtido>';
+                if (isset($linea->ivaCobradoFabricaSurtido)) {
+                    $xmlString .= '<IVACobradoFabricaSurtido>' . $linea->ivaCobradoFabricaSurtido . '</IVACobradoFabricaSurtido>';
+                }
+                $xmlString .= '<BaseImponibleSurtido>' . $linea->baseImponibleSurtido . '</BaseImponibleSurtido>';
+                if (isset($linea->impuestoSurtido) && is_array($linea->impuestoSurtido)) {
+                    $impuestos = array_slice($linea->impuestoSurtido, 0, 1000);
+                    foreach ($impuestos as $imp) {
+                        $xmlString .= '<ImpuestoSurtido>';
+                        $xmlString .= '<CodigoImpuestoSurtido>' . $imp->codigoImpuestoSurtido . '</CodigoImpuestoSurtido>';
+                        if (isset($imp->codigoImpuestoOTROSurtido)) {
+                            $xmlString .= '<CodigoImpuestoOTROSurtido>' . $imp->codigoImpuestoOTROSurtido . '</CodigoImpuestoOTROSurtido>';
+                        }
+                        if (isset($imp->codigoTarifaIVASurtido)) {
+                            $xmlString .= '<CodigoTarifaIVASurtido>' . $imp->codigoTarifaIVASurtido . '</CodigoTarifaIVASurtido>';
+                        }
+                        if (isset($imp->tarifaSurtido)) {
+                            $xmlString .= '<TarifaSurtido>' . $imp->tarifaSurtido . '</TarifaSurtido>';
+                        }
+                        if (isset($imp->datosImpuestoEspecificoSurtido)) {
+                            $e = $imp->datosImpuestoEspecificoSurtido;
+                            $xmlString .= '<DatosImpuestoEspecificoSurtido>';
+                            if (isset($e->cantidadUnidadMedidaSurtido)) {
+                                $xmlString .= '<CantidadUnidadMedidaSurtido>' . $e->cantidadUnidadMedidaSurtido . '</CantidadUnidadMedidaSurtido>';
+                            }
+                            if (isset($e->porcentajeSurtido)) {
+                                $xmlString .= '<PorcentajeSurtido>' . $e->porcentajeSurtido . '</PorcentajeSurtido>';
+                            }
+                            if (isset($e->proporcionSurtido)) {
+                                $xmlString .= '<ProporcionSurtido>' . $e->proporcionSurtido . '</ProporcionSurtido>';
+                            }
+                            if (isset($e->volumenUnidadConsumoSurtido)) {
+                                $xmlString .= '<VolumenUnidadConsumoSurtido>' . $e->volumenUnidadConsumoSurtido . '</VolumenUnidadConsumoSurtido>';
+                            }
+                            if (isset($e->impuestoUnidadSurtido)) {
+                                $xmlString .= '<ImpuestoUnidadSurtido>' . $e->impuestoUnidadSurtido . '</ImpuestoUnidadSurtido>';
+                            }
+                            $xmlString .= '</DatosImpuestoEspecificoSurtido>';
+                        }
+                        $xmlString .= '<MontoImpuestoSurtido>' . $imp->montoImpuestoSurtido . '</MontoImpuestoSurtido>';
+                        $xmlString .= '</ImpuestoSurtido>';
+                    }
+                }
+                $xmlString .= '</LineaDetalleSurtido>';
+            }
+            $xmlString .= '</DetalleSurtido>';
+        }
+
+        $xmlString .= '
             <PrecioUnitario>' . $d->precioUnitario . '</PrecioUnitario>
             <MontoTotal>' . $d->montoTotal . '</MontoTotal>';
 
-        if (isset($d->descuento) && is_string($d->descuento) && strlen($d->descuento) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->descuento) > 5) {
-                error_log("descuento: " . count($d->descuento) . " is greater than 5");
-            }
-            $d->descuento = array_slice($d->descuento, 0, 5);
-            foreach ($d->descuento as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
-                    $xmlString .= '<Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
-                }
-            }
-        }
+        if (isset($d->descuento) && !empty($d->descuento)) {
+            $descuentoArray = (array)$d->descuento;
 
-        if (isset($d->descuentoLinea) && $d->descuentoLinea != "" && $d->descuentoLinea != 0) {
-            foreach ($d->descuentoLinea as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
+            if (count($descuentoArray) > 5) {
+                error_log("descuento: " . count($descuentoArray) . " is greater than 5");
+            }
+            $descuentoArray = array_slice($descuentoArray, 0, 5);
+
+            foreach ($descuentoArray as $descuentos) {
+                $c = (array)$descuentos;
+                if (
+                    is_array($c) &&
+                    isset($c['montoDescuento']) && $c['montoDescuento'] !== "" &&
+                    isset($c['codigoDescuento']) && $c['codigoDescuento'] !== ""
+                ) {
                     $xmlString .= '
-                    <Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
+                <Descuento>
+                    <MontoDescuento>' . $c['montoDescuento'] . '</MontoDescuento>
+                    <CodigoDescuento>' . $c['codigoDescuento'] . '</CodigoDescuento>';
+                    // CodigoDescuentoOTRO: obligatorio si codigoDescuento == "99" y existe el campo
+                    if (
+                        isset($c['codigoDescuento']) && $c['codigoDescuento'] === "99" &&
+                        isset($c['codigoDescuentoOTRO']) &&
+                        strlen($c['codigoDescuentoOTRO']) >= 5 && strlen($c['codigoDescuentoOTRO']) <= 100
+                    ) {
+                        $xmlString .= '<CodigoDescuentoOTRO>' . htmlspecialchars($c['codigoDescuentoOTRO']) . '</CodigoDescuentoOTRO>';
+                    }
+                    // NaturalezaDescuento: minOccurs=0, longitud 3-80
+                    if (
+                        isset($c['naturalezaDescuento']) &&
+                        strlen($c['naturalezaDescuento']) >= 3 && strlen($c['naturalezaDescuento']) <= 80
+                    ) {
+                        $xmlString .= '<NaturalezaDescuento>' . htmlspecialchars($c['naturalezaDescuento']) . '</NaturalezaDescuento>';
+                    }
+                    $xmlString .= '
+                </Descuento>';
                 }
             }
         }
@@ -1951,7 +2381,7 @@ function genXMLND()
         $xmlString .= '<SubTotal>' . $d->subTotal . '</SubTotal>';
 
         if (isset($d->IVACobradoFabrica) && $d->IVACobradoFabrica != "") {
-            $xmlString .= '<IVACobradoFabrica>' . $d->$IVACobradoFabrica . '</IVACobradoFabrica>';
+            $xmlString .= '<IVACobradoFabrica>' . $d->IVACobradoFabrica . '</IVACobradoFabrica>';
         }
 
         if (isset($d->baseImponible) && $d->baseImponible != "") {
@@ -1962,8 +2392,16 @@ function genXMLND()
                 $xmlString .= '<Impuesto>
                 <Codigo>' . $i->codigo . '</Codigo>';
 
+                // Add <CodigoImpuestoOTRO> if required
+                if (
+                    isset($i->codigo) && $i->codigo == "99" &&
+                    isset($i->codigoImpuestoOtro) && !empty($i->codigoImpuestoOtro)
+                ) {
+                    $xmlString .= '<CodigoImpuestoOTRO>' . $i->codigoImpuestoOtro . '</CodigoImpuestoOTRO>';
+                }
+
                 if (isset($i->codigoTarifa) && $i->codigoTarifa != "") {
-                    $xmlString .= '<CodigoTarifa>' . $i->codigoTarifa . '</CodigoTarifa>';
+                    $xmlString .= '<CodigoTarifaIVA>' . $i->codigoTarifa . '</CodigoTarifaIVA>';
                 }
 
                 if (isset($i->tarifa) && $i->tarifa != "") {
@@ -1971,7 +2409,33 @@ function genXMLND()
                 }
 
                 if (isset($i->factorIVA) && $i->factorIVA != "") {
-                    $xmlString .= '<FactorIVA>' . $i->factorIVA . '</FactorIVA>';
+                    $xmlString .= '<FactorCalculoIVA>' . $i->factorIVA . '</FactorCalculoIVA>';
+                }
+
+                if (
+                    isset($i->codigo) &&
+                    in_array($i->codigo, ["03", "04", "05", "06"]) &&
+                    isset($i->datosImpuestoEspecifico) &&
+                    is_object($i->datosImpuestoEspecifico)
+                ) {
+                    $datosImpuestoEsp = $i->datosImpuestoEspecifico;
+                    $xmlString .= '<DatosImpuestoEspecifico>';
+                    if (isset($datosImpuestoEsp->cantidadUnidadMedida)) {
+                        $xmlString .= '<CantidadUnidadMedida>' . $datosImpuestoEsp->cantidadUnidadMedida . '</CantidadUnidadMedida>';
+                    }
+                    if (isset($datosImpuestoEsp->porcentaje)) {
+                        $xmlString .= '<Porcentaje>' . $datosImpuestoEsp->porcentaje . '</Porcentaje>';
+                    }
+                    if (isset($datosImpuestoEsp->proporcion)) {
+                        $xmlString .= '<Proporcion>' . $datosImpuestoEsp->proporcion . '</Proporcion>';
+                    }
+                    if (isset($datosImpuestoEsp->volumenUnidadConsumo)) {
+                        $xmlString .= '<VolumenUnidadConsumo>' . $datosImpuestoEsp->volumenUnidadConsumo . '</VolumenUnidadConsumo>';
+                    }
+                    if (isset($datosImpuestoEsp->impuestoUnidad)) {
+                        $xmlString .= '<ImpuestoUnidad>' . $datosImpuestoEsp->impuestoUnidad . '</ImpuestoUnidad>';
+                    }
+                    $xmlString .= '</DatosImpuestoEspecifico>';
                 }
 
                 $xmlString .= '<Monto>' . $i->monto . '</Monto>';
@@ -1983,15 +2447,24 @@ function genXMLND()
                 if (isset($i->exoneracion) && $i->exoneracion != "") {
                     $xmlString .= '
                     <Exoneracion>
-                        <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
-                        <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                        <TipoDocumentoEX1>' . $i->exoneracion->tipoDocumento . '</TipoDocumentoEX1>';
+                    if (isset($i->exoneracion->tipoDocumentoOtro) && !empty($i->exoneracion->tipoDocumentoOtro)) {
+                        $xmlString .= '<TipoDocumentoOTRO>' . $i->exoneracion->tipoDocumentoOtro . '</TipoDocumentoOTRO>';
+                    }
+                    $xmlString .= '<NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>';
+                    if (isset($i->exoneracion->numeroArticulo) && !empty($i->exoneracion->numeroArticulo)) {
+                        $xmlString .= '<Articulo>' . $i->exoneracion->numeroArticulo . '</Articulo>';
+                    }
+                    if (isset($i->exoneracion->numeroInciso) && !empty($i->exoneracion->numeroInciso)) {
+                        $xmlString .= '<Inciso>' . $i->exoneracion->numeroInciso . '</Inciso>';
+                    }
+                    $xmlString .= '<NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
                     if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
                         $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
                     }
                     $xmlString .= '
-                        <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
-                        <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
+                        <FechaEmisionEX>' . $i->exoneracion->fechaEmision . '</FechaEmisionEX>
+                        <TarifaExonerada>' . $i->exoneracion->tarifaExoneracion . '</TarifaExonerada>
                         <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
                     </Exoneracion>';
                 }
@@ -2002,9 +2475,7 @@ function genXMLND()
         if (isset($d->impuestoAsumidoEmisorFabrica) && $d->impuestoAsumidoEmisorFabrica != "") {
             $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
         }
-        if (isset($d->impuestoNeto) && $d->impuestoNeto != "") {
-            $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
-        }
+        $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
         $xmlString .= '<MontoTotalLinea>' . $d->montoTotalLinea . '</MontoTotalLinea>';
         $xmlString .= '</LineaDetalle>';
         $l++;
@@ -2055,6 +2526,12 @@ function genXMLND()
             <CodigoMoneda>' . $codMoneda . '</CodigoMoneda>
             <TipoCambio>' . $tipoCambio . '</TipoCambio>
         </CodigoTipoMoneda>';
+    } else {
+        $xmlString .= '
+    <CodigoTipoMoneda>
+        <CodigoMoneda>CRC</CodigoMoneda>
+        <TipoCambio>1</TipoCambio>
+    </CodigoTipoMoneda>';
     }
 
     if ($totalServGravados != '') {
@@ -2194,62 +2671,35 @@ function genXMLND()
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
 
-    $xmlString .= '
-    <InformacionReferencia>';
-
-    if (in_array($infoRefeTipoDoc, TIPODOCREFVALUES, true)) {
-        $xmlString .= '
-        <TipoDocIR>' . $infoRefeTipoDoc . '</TipoDocIR>';
-    } else {
-        grace_error("El parámetro infoRefeTipoDoc no cumple con la estructura establecida. infoRefeTipoDoc = " . $infoRefeTipoDoc);
-        return "El parámetro infoRefeTipoDoc no cumple con la estructura establecida.";
-    }
-
-    if ($infoRefeTipoDoc === '99') {
-        if (isset($infoRefeTipoDocOtro) && strlen($infoRefeTipoDocOtro) >= 5 && strlen($infoRefeTipoDocOtro) <= 100) {
-            $xmlString .= '
-        <TipoDocRefOTRO>' . htmlspecialchars($infoRefeTipoDocOtro) . '</TipoDocRefOTRO>';
-        } else {
-            grace_error("El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida. infoRefeTipoDocOtro = " . $infoRefeTipoDocOtro);
-            return "El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida.";
+    if (is_array($informacionReferencia) && count($informacionReferencia) > 0) {
+        foreach ($informacionReferencia as $ref) {
+            if (!empty($ref->tipoDoc) && !empty($ref->fechaEmision)) {
+                if (in_array($ref->tipoDoc, TIPODOCREFVALUES, true)) {
+                    $xmlString .= '<InformacionReferencia>';
+                    $xmlString .= '<TipoDocIR>' . $ref->tipoDoc . '</TipoDocIR>';
+                    if ($ref->tipoDoc === '99' && isset($ref->tipoDocOtro)) {
+                        $xmlString .= '<TipoDocRefOTRO>' . htmlspecialchars($ref->tipoDocOtro) . '</TipoDocRefOTRO>';
+                    }
+                    if (isset($ref->numero)) {
+                        $xmlString .= '<Numero>' . $ref->numero . '</Numero>';
+                    }
+                    $xmlString .= '<FechaEmisionIR>' . $ref->fechaEmision . '</FechaEmisionIR>';
+                    if (isset($ref->codigo)) {
+                        $xmlString .= '<Codigo>' . $ref->codigo . '</Codigo>';
+                        if ($ref->codigo === '99' && isset($ref->codigoOtro)) {
+                            $xmlString .= '<CodigoReferenciaOTRO>' . htmlspecialchars($ref->codigoOtro) . '</CodigoReferenciaOTRO>';
+                        }
+                    }
+                    if (isset($ref->razon)) {
+                        $xmlString .= '<Razon>' . $ref->razon . '</Razon>';
+                    }
+                    $xmlString .= '</InformacionReferencia>';
+                } else {
+                    grace_error("El parámetro tipoDoc no cumple con la estructura establecida. tipoDoc = " . $ref->tipoDoc);
+                }
+            }
         }
     }
-
-    if (isset($infoRefeNumero) && $infoRefeNumero != "") {
-        $xmlString .= '
-        <Numero>' . $infoRefeNumero . '</Numero>';
-    }
-
-    $xmlString .= '
-        <FechaEmisionIR>' . $infoRefeFechaEmision . '</FechaEmisionIR>';
-
-    if (isset($infoRefeCodigo) && $infoRefeCodigo != "") {
-        if (in_array($infoRefeCodigo, CODIDOREFVALUES, true)) {
-            $xmlString .= '
-        <Codigo>' . $infoRefeCodigo . '</Codigo>';
-        } else {
-            grace_error("El parámetro infoRefeCodigo no cumple con la estructura establecida. infoRefeCodigo = " . $infoRefeCodigo);
-            return "El parámetro infoRefeCodigo no cumple con la estructura establecida.";
-        }
-    }
-
-    if ($infoRefeCodigo === '99') {
-        if (isset($infoRefeCodigoOtro) && strlen($infoRefeCodigoOtro) >= 5 && strlen($infoRefeCodigoOtro) <= 100) {
-            $xmlString .= '
-        <CodigoReferenciaOTRO>' . htmlspecialchars($infoRefeCodigoOtro) . '</CodigoReferenciaOTRO>';
-        } else {
-            grace_error("El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida. infoRefeCodigoOTRO = " . $infoRefeCodigoOtro);
-            return "El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida.";
-        }
-    }
-
-    if (isset($infoRefeRazon) && $infoRefeRazon != "") {
-        $xmlString .= '
-        <Razon>' . $infoRefeRazon . '</Razon>';
-    }
-
-    $xmlString .= '
-    </InformacionReferencia>';
 
     // JSON de ejemplo
     //    {
@@ -2281,41 +2731,45 @@ function genXMLND()
     //  ]
     //}
 
-    if (isset($otros) && !empty($otros)) {
-        $xmlString .= '<Otros>';
+    // Start Otros element
+    $xmlString .= '<Otros>';
 
-        // Handle OtroTexto elements
-        if (isset($otros->otroTexto)) {
-            $xmlString .= '<OtroTexto';
-            if (isset($otros->otroTexto->codigo)) {
-                $xmlString .= ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"';
+    // Handle multiple OtroTexto elements
+    if (isset($otros->otroTexto)) {
+        if (is_array($otros->otroTexto)) {
+            foreach ($otros->otroTexto as $otroTexto) {
+                $codigo = isset($otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otroTexto->codigo) . '"' : '';
+                $texto = isset($otroTexto->texto) ? htmlspecialchars($otroTexto->texto) : '';
+                $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
             }
-            $xmlString .= '>' . htmlspecialchars($otros->otroTexto->texto) . '</OtroTexto>';
+        } else {
+            $codigo = isset($otros->otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"' : '';
+            $texto = isset($otros->otroTexto->texto) ? htmlspecialchars($otros->otroTexto->texto) : '';
+            $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
         }
-
-        // Handle OtroContenido elements
-        if (isset($otros->otroContenido)) {
-            foreach ($otros->otroContenido as $item) {
-                $xmlString .= '<OtroContenido';
-                if (isset($item->codigo)) {
-                    $xmlString .= ' codigo="' . htmlspecialchars($item->codigo) . '"';
-                }
-                $xmlString .= '>';
-                if (isset($item->contenidoEstructurado)) {
-                    foreach ($item->contenidoEstructurado as $element => $content) {
-                        $xmlString .= '<' . $element . ' xmlns="https://www.grupoice.com">';
-                        foreach ($content as $nestedElement => $nestedContent) {
-                            $xmlString .= '<' . $nestedElement . '>' . htmlspecialchars($nestedContent) . '</' . $nestedElement . '>';
-                        }
-                        $xmlString .= '</' . $element . '>';
-                    }
-                }
-                $xmlString .= '</OtroContenido>';
-            }
-        }
-
-        $xmlString .= '</Otros>';
     }
+
+    // Handle multiple OtroContenido elements
+    if (isset($otros->otroContenido) && is_array($otros->otroContenido)) {
+        foreach ($otros->otroContenido as $otroContenido) {
+            $codigo = isset($otroContenido->codigo) ? ' codigo="' . htmlspecialchars($otroContenido->codigo) . '"' : '';
+            $contenido = '';
+            if (isset($otroContenido->contenidoEstructurado) && is_object($otroContenido->contenidoEstructurado)) {
+                foreach ($otroContenido->contenidoEstructurado as $tag => $data) {
+                    $contenido .= '<' . $tag . '>';
+                    if (is_object($data)) {
+                        foreach ($data as $k => $v) {
+                            $contenido .= '<' . $k . '>' . htmlspecialchars($v) . '</' . $k . '>';
+                        }
+                    }
+                    $contenido .= '</' . $tag . '>';
+                }
+            }
+            $xmlString .= '<OtroContenido' . $codigo . '>' . $contenido . '</OtroContenido>';
+        }
+    }
+
+    $xmlString .= '</Otros>';
 
     // XML Resultante
     //<Otros>
@@ -2416,18 +2870,12 @@ function genXMLTE()
     $totalOtrosCargos = params_get("totalOtrosCargos");
     $totalComprobante = params_get("total_comprobante");
 
-    $otros = params_get("otros");
-    $otrosType = params_get("otrosType");
-    $infoRefeTipoDoc = params_get("infoRefeTipoDoc");
-    $infoRefeTipoDocOtro = params_get("infoRefeTipoDocOTRO");
-    $infoRefeNumero = params_get("infoRefeNumero");
-    $infoRefeFechaEmision = params_get("infoRefeFechaEmision");
-    $infoRefeCodigo = params_get("infoRefeCodigo");
-    $infoRefeCodigoOtro = params_get("infoRefeCodigoOTRO");
-    $infoRefeRazon = params_get("infoRefeRazon");
+    $otros = json_decode(params_get('otros'));
 
     // Detalles de la compra
     $detalles = json_decode(params_get("detalles"));
+    $informacionReferencia = json_decode(params_get("informacion_referencia"));
+
     $otrosCargos = json_decode(params_get("otrosCargos"));
     $mediosPago = json_decode(params_get("medios_pago"));
     // Resumen
@@ -2627,84 +3075,176 @@ function genXMLTE()
         <LineaDetalle>
             <NumeroLinea>' . $l . '</NumeroLinea>';
 
-        if (isset($d->codigo) && $d->codigo != "") {
-            $xmlString .= '
-            <Codigo>' . $d->codigo . '</Codigo>';
-        }
+        $xmlString .= '
+            <CodigoCABYS>' . $d->codigoCABYS . '</CodigoCABYS>';
 
-        if (isset($d->codigoComercial) && is_string($d->codigoComercial) && strlen($d->codigoComercial) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->codigoComercial) > 5) {
-                error_log("codigoComercial: " . count($d->codigoComercial) . " is greater than 5");
-            }
-            $d->codigoComercial = array_slice($d->codigoComercial, 0, 5);
-            foreach ($d->codigoComercial as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
-                }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
-            }
-        }
+        if (isset($d->codigoComercial) && !empty($d->codigoComercial)) {
+            // Convertir el objeto $d->codigoComercial en un array
+            $codigoComercialArray = (array)$d->codigoComercial;
 
-        if (isset($d->codigoComercialLinea) && $d->codigoComercialLinea != "" && $d->codigoComercialLinea != 0) {
-            foreach ($d->codigoComercialLinea as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
+            // Delimitar el array a solo 5 elementos
+            if (count($codigoComercialArray) > 5) {
+                error_log("codigoComercial: " . count($codigoComercialArray) . " is greater than 5");
+            }
+            $codigoComercialArray = array_slice($codigoComercialArray, 0, 5);
+
+            // Iterar sobre los elementos del array
+            foreach ($codigoComercialArray as $codigos) {
+                $c = (array)$codigos;
+                // Verificar si el elemento es un array asociativo
+                if (is_array($c) && isset($c['tipo']) && $c['tipo'] != "" && isset($c['codigo']) && $c['codigo'] != "") {
                     $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
+                        <CodigoComercial>
+                            <Tipo>' . $c['tipo'] . '</Tipo>
+                            <Codigo>' . $c['codigo'] . '</Codigo>
+                        </CodigoComercial>';
                 }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
             }
         }
 
         $xmlString .= '
             <Cantidad>' . $d->cantidad . '</Cantidad>
             <UnidadMedida>' . $d->unidadMedida . '</UnidadMedida>';
-        if (isset($c->codigo) && $c->codigo != "") {
+        if (isset($d->unidadMedidaComercial) && $d->unidadMedidaComercial != "") {
             $xmlString .= '
                 <UnidadMedidaComercial>' . $d->unidadMedidaComercial . '</UnidadMedidaComercial>';
         }
         $xmlString .= '
-            <Detalle>' . $d->detalle . '</Detalle>
+            <Detalle>' . $d->detalle . '</Detalle>';
+        if (isset($d->numeroVINoSerie) && $d->numeroVINoSerie != "") {
+            $xmlString .= '<NumeroVINoSerie>' . $d->numeroVINoSerie . '</NumeroVINoSerie>';
+        }
+
+        if (isset($d->registroMedicamento) && $d->registroMedicamento !== "") {
+            $xmlString .= '<RegistroMedicamento>' . htmlspecialchars($d->registroMedicamento) . '</RegistroMedicamento>';
+        }
+        if (isset($d->formaFarmaceutica) && $d->formaFarmaceutica !== "") {
+            $xmlString .= '<FormaFarmaceutica>' . htmlspecialchars($d->formaFarmaceutica) . '</FormaFarmaceutica>';
+        }
+
+        if (isset($d->detalleSurtido) && is_array($d->detalleSurtido) && count($d->detalleSurtido) > 0) {
+            $xmlString .= '<DetalleSurtido>';
+            $lineas = array_slice($d->detalleSurtido, 0, 20);
+            foreach ($lineas as $linea) {
+                $xmlString .= '<LineaDetalleSurtido>';
+                $xmlString .= '<CodigoCABYSSurtido>' . $linea->codigoCABYSSurtido . '</CodigoCABYSSurtido>';
+                if (isset($linea->codigoComercialSurtido) && is_array($linea->codigoComercialSurtido)) {
+                    $codigos = array_slice($linea->codigoComercialSurtido, 0, 5);
+                    foreach ($codigos as $codigo) {
+                        $xmlString .= '<CodigoComercialSurtido>';
+                        $xmlString .= '<TipoSurtido>' . $codigo->tipoSurtido . '</TipoSurtido>';
+                        $xmlString .= '<CodigoSurtido>' . $codigo->codigoSurtido . '</CodigoSurtido>';
+                        $xmlString .= '</CodigoComercialSurtido>';
+                    }
+                }
+                $xmlString .= '<CantidadSurtido>' . $linea->cantidadSurtido . '</CantidadSurtido>';
+                $xmlString .= '<UnidadMedidaSurtido>' . $linea->unidadMedidaSurtido . '</UnidadMedidaSurtido>';
+                if (isset($linea->unidadMedidaComercialSurtido)) {
+                    $xmlString .= '<UnidadMedidaComercialSurtido>' . $linea->unidadMedidaComercialSurtido . '</UnidadMedidaComercialSurtido>';
+                }
+                $xmlString .= '<DetalleSurtido>' . $linea->detalleSurtido . '</DetalleSurtido>';
+                $xmlString .= '<PrecioUnitarioSurtido>' . $linea->precioUnitarioSurtido . '</PrecioUnitarioSurtido>';
+                $xmlString .= '<MontoTotalSurtido>' . $linea->montoTotalSurtido . '</MontoTotalSurtido>';
+                if (isset($linea->descuentoSurtido) && is_array($linea->descuentoSurtido)) {
+                    $descuentos = array_slice($linea->descuentoSurtido, 0, 5);
+                    foreach ($descuentos as $desc) {
+                        $xmlString .= '<DescuentoSurtido>';
+                        $xmlString .= '<MontoDescuentoSurtido>' . $desc->montoDescuentoSurtido . '</MontoDescuentoSurtido>';
+                        $xmlString .= '<CodigoDescuentoSurtido>' . $desc->codigoDescuentoSurtido . '</CodigoDescuentoSurtido>';
+                        if (isset($desc->descuentoSurtidoOtros)) {
+                            $xmlString .= '<DescuentoSurtidoOtros>' . $desc->descuentoSurtidoOtros . '</DescuentoSurtidoOtros>';
+                        }
+                        $xmlString .= '</DescuentoSurtido>';
+                    }
+                }
+                $xmlString .= '<SubTotalSurtido>' . $linea->subTotalSurtido . '</SubTotalSurtido>';
+                if (isset($linea->ivaCobradoFabricaSurtido)) {
+                    $xmlString .= '<IVACobradoFabricaSurtido>' . $linea->ivaCobradoFabricaSurtido . '</IVACobradoFabricaSurtido>';
+                }
+                $xmlString .= '<BaseImponibleSurtido>' . $linea->baseImponibleSurtido . '</BaseImponibleSurtido>';
+                if (isset($linea->impuestoSurtido) && is_array($linea->impuestoSurtido)) {
+                    $impuestos = array_slice($linea->impuestoSurtido, 0, 1000);
+                    foreach ($impuestos as $imp) {
+                        $xmlString .= '<ImpuestoSurtido>';
+                        $xmlString .= '<CodigoImpuestoSurtido>' . $imp->codigoImpuestoSurtido . '</CodigoImpuestoSurtido>';
+                        if (isset($imp->codigoImpuestoOTROSurtido)) {
+                            $xmlString .= '<CodigoImpuestoOTROSurtido>' . $imp->codigoImpuestoOTROSurtido . '</CodigoImpuestoOTROSurtido>';
+                        }
+                        if (isset($imp->codigoTarifaIVASurtido)) {
+                            $xmlString .= '<CodigoTarifaIVASurtido>' . $imp->codigoTarifaIVASurtido . '</CodigoTarifaIVASurtido>';
+                        }
+                        if (isset($imp->tarifaSurtido)) {
+                            $xmlString .= '<TarifaSurtido>' . $imp->tarifaSurtido . '</TarifaSurtido>';
+                        }
+                        if (isset($imp->datosImpuestoEspecificoSurtido)) {
+                            $e = $imp->datosImpuestoEspecificoSurtido;
+                            $xmlString .= '<DatosImpuestoEspecificoSurtido>';
+                            if (isset($e->cantidadUnidadMedidaSurtido)) {
+                                $xmlString .= '<CantidadUnidadMedidaSurtido>' . $e->cantidadUnidadMedidaSurtido . '</CantidadUnidadMedidaSurtido>';
+                            }
+                            if (isset($e->porcentajeSurtido)) {
+                                $xmlString .= '<PorcentajeSurtido>' . $e->porcentajeSurtido . '</PorcentajeSurtido>';
+                            }
+                            if (isset($e->proporcionSurtido)) {
+                                $xmlString .= '<ProporcionSurtido>' . $e->proporcionSurtido . '</ProporcionSurtido>';
+                            }
+                            if (isset($e->volumenUnidadConsumoSurtido)) {
+                                $xmlString .= '<VolumenUnidadConsumoSurtido>' . $e->volumenUnidadConsumoSurtido . '</VolumenUnidadConsumoSurtido>';
+                            }
+                            if (isset($e->impuestoUnidadSurtido)) {
+                                $xmlString .= '<ImpuestoUnidadSurtido>' . $e->impuestoUnidadSurtido . '</ImpuestoUnidadSurtido>';
+                            }
+                            $xmlString .= '</DatosImpuestoEspecificoSurtido>';
+                        }
+                        $xmlString .= '<MontoImpuestoSurtido>' . $imp->montoImpuestoSurtido . '</MontoImpuestoSurtido>';
+                        $xmlString .= '</ImpuestoSurtido>';
+                    }
+                }
+                $xmlString .= '</LineaDetalleSurtido>';
+            }
+            $xmlString .= '</DetalleSurtido>';
+        }
+
+        $xmlString .= '
             <PrecioUnitario>' . $d->precioUnitario . '</PrecioUnitario>
             <MontoTotal>' . $d->montoTotal . '</MontoTotal>';
 
-        if (isset($d->descuento) && is_string($d->descuento) && strlen($d->descuento) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->descuento) > 5) {
-                error_log("descuento: " . count($d->descuento) . " is greater than 5");
-            }
-            $d->descuento = array_slice($d->descuento, 0, 5);
-            foreach ($d->descuento as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
-                    $xmlString .= '<Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
-                }
-            }
-        }
+        if (isset($d->descuento) && !empty($d->descuento)) {
+            $descuentoArray = (array)$d->descuento;
 
-        if (isset($d->descuentoLinea) && $d->descuentoLinea != "" && $d->descuentoLinea != 0) {
-            foreach ($d->descuentoLinea as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
+            if (count($descuentoArray) > 5) {
+                error_log("descuento: " . count($descuentoArray) . " is greater than 5");
+            }
+            $descuentoArray = array_slice($descuentoArray, 0, 5);
+
+            foreach ($descuentoArray as $descuentos) {
+                $c = (array)$descuentos;
+                if (
+                    is_array($c) &&
+                    isset($c['montoDescuento']) && $c['montoDescuento'] !== "" &&
+                    isset($c['codigoDescuento']) && $c['codigoDescuento'] !== ""
+                ) {
                     $xmlString .= '
-                    <Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
+                <Descuento>
+                    <MontoDescuento>' . $c['montoDescuento'] . '</MontoDescuento>
+                    <CodigoDescuento>' . $c['codigoDescuento'] . '</CodigoDescuento>';
+                    // CodigoDescuentoOTRO: obligatorio si codigoDescuento == "99" y existe el campo
+                    if (
+                        isset($c['codigoDescuento']) && $c['codigoDescuento'] === "99" &&
+                        isset($c['codigoDescuentoOTRO']) &&
+                        strlen($c['codigoDescuentoOTRO']) >= 5 && strlen($c['codigoDescuentoOTRO']) <= 100
+                    ) {
+                        $xmlString .= '<CodigoDescuentoOTRO>' . htmlspecialchars($c['codigoDescuentoOTRO']) . '</CodigoDescuentoOTRO>';
+                    }
+                    // NaturalezaDescuento: minOccurs=0, longitud 3-80
+                    if (
+                        isset($c['naturalezaDescuento']) &&
+                        strlen($c['naturalezaDescuento']) >= 3 && strlen($c['naturalezaDescuento']) <= 80
+                    ) {
+                        $xmlString .= '<NaturalezaDescuento>' . htmlspecialchars($c['naturalezaDescuento']) . '</NaturalezaDescuento>';
+                    }
+                    $xmlString .= '
+                </Descuento>';
                 }
             }
         }
@@ -2712,7 +3252,7 @@ function genXMLTE()
         $xmlString .= '<SubTotal>' . $d->subTotal . '</SubTotal>';
 
         if (isset($d->IVACobradoFabrica) && $d->IVACobradoFabrica != "") {
-            $xmlString .= '<IVACobradoFabrica>' . $d->$IVACobradoFabrica . '</IVACobradoFabrica>';
+            $xmlString .= '<IVACobradoFabrica>' . $d->IVACobradoFabrica . '</IVACobradoFabrica>';
         }
 
         if (isset($d->baseImponible) && $d->baseImponible != "") {
@@ -2723,9 +3263,18 @@ function genXMLTE()
                 $xmlString .= '
                 <Impuesto>
                     <Codigo>' . $i->codigo . '</Codigo>';
+
+                // Add <CodigoImpuestoOTRO> if required
+                if (
+                    isset($i->codigo) && $i->codigo == "99" &&
+                    isset($i->codigoImpuestoOtro) && !empty($i->codigoImpuestoOtro)
+                ) {
+                    $xmlString .= '<CodigoImpuestoOTRO>' . $i->codigoImpuestoOtro . '</CodigoImpuestoOTRO>';
+                }
+
                 if (isset($i->codigoTarifa) && $i->codigoTarifa != "") {
                     $xmlString .= '
-                    <CodigoTarifa>' . $i->codigoTarifa . '</CodigoTarifa>';
+                    <CodigoTarifaIVA>' . $i->codigoTarifa . '</CodigoTarifaIVA>';
                 }
 
                 if (isset($i->tarifa) && $i->tarifa != "") {
@@ -2735,7 +3284,33 @@ function genXMLTE()
 
                 if (isset($i->factorIVA) && $i->factorIVA != "") {
                     $xmlString .= '
-                    <FactorIVA>' . $i->factorIVA . '</FactorIVA>';
+                    <FactorCalculoIVA>' . $i->factorIVA . '</FactorCalculoIVA>';
+                }
+
+                if (
+                    isset($i->codigo) &&
+                    in_array($i->codigo, ["03", "04", "05", "06"]) &&
+                    isset($i->datosImpuestoEspecifico) &&
+                    is_object($i->datosImpuestoEspecifico)
+                ) {
+                    $datosImpuestoEsp = $i->datosImpuestoEspecifico;
+                    $xmlString .= '<DatosImpuestoEspecifico>';
+                    if (isset($datosImpuestoEsp->cantidadUnidadMedida)) {
+                        $xmlString .= '<CantidadUnidadMedida>' . $datosImpuestoEsp->cantidadUnidadMedida . '</CantidadUnidadMedida>';
+                    }
+                    if (isset($datosImpuestoEsp->porcentaje)) {
+                        $xmlString .= '<Porcentaje>' . $datosImpuestoEsp->porcentaje . '</Porcentaje>';
+                    }
+                    if (isset($datosImpuestoEsp->proporcion)) {
+                        $xmlString .= '<Proporcion>' . $datosImpuestoEsp->proporcion . '</Proporcion>';
+                    }
+                    if (isset($datosImpuestoEsp->volumenUnidadConsumo)) {
+                        $xmlString .= '<VolumenUnidadConsumo>' . $datosImpuestoEsp->volumenUnidadConsumo . '</VolumenUnidadConsumo>';
+                    }
+                    if (isset($datosImpuestoEsp->impuestoUnidad)) {
+                        $xmlString .= '<ImpuestoUnidad>' . $datosImpuestoEsp->impuestoUnidad . '</ImpuestoUnidad>';
+                    }
+                    $xmlString .= '</DatosImpuestoEspecifico>';
                 }
 
                 $xmlString .= '
@@ -2744,15 +3319,24 @@ function genXMLTE()
                 if (isset($i->exoneracion) && $i->exoneracion != "") {
                     $xmlString .= '
                     <Exoneracion>
-                        <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
-                        <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                        <TipoDocumentoEX1>' . $i->exoneracion->tipoDocumento . '</TipoDocumentoEX1>';
+                    if (isset($i->exoneracion->tipoDocumentoOtro) && !empty($i->exoneracion->tipoDocumentoOtro)) {
+                        $xmlString .= '<TipoDocumentoOTRO>' . $i->exoneracion->tipoDocumentoOtro . '</TipoDocumentoOTRO>';
+                    }
+                    $xmlString .= '<NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>';
+                    if (isset($i->exoneracion->numeroArticulo) && !empty($i->exoneracion->numeroArticulo)) {
+                        $xmlString .= '<Articulo>' . $i->exoneracion->numeroArticulo . '</Articulo>';
+                    }
+                    if (isset($i->exoneracion->numeroInciso) && !empty($i->exoneracion->numeroInciso)) {
+                        $xmlString .= '<Inciso>' . $i->exoneracion->numeroInciso . '</Inciso>';
+                    }
+                    $xmlString .= '<NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
                     if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
                         $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
                     }
                     $xmlString .= '
-                        <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
-                        <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
+                        <FechaEmisionEX>' . $i->exoneracion->fechaEmision . '</FechaEmisionEX>
+                        <TarifaExonerada>' . $i->exoneracion->tarifaExoneracion . '</TarifaExonerada>
                         <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
                     </Exoneracion>';
                 }
@@ -2761,12 +3345,8 @@ function genXMLTE()
                 </Impuesto>';
             }
         }
-        if (isset($d->impuestoAsumidoEmisorFabrica) && $d->impuestoAsumidoEmisorFabrica != "") {
-            $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
-        }
-        if (isset($d->impuestoNeto) && $d->impuestoNeto != "") {
-            $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
-        }
+        $xmlString .= '<ImpuestoAsumidoEmisorFabrica>' . $d->impuestoAsumidoEmisorFabrica . '</ImpuestoAsumidoEmisorFabrica>';
+        $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
         $xmlString .= '<MontoTotalLinea>' . $d->montoTotalLinea . '</MontoTotalLinea>';
         $xmlString .= '</LineaDetalle>';
         $l++;
@@ -2817,6 +3397,12 @@ function genXMLTE()
             <CodigoMoneda>' . $codMoneda . '</CodigoMoneda>
             <TipoCambio>' . $tipoCambio . '</TipoCambio>
         </CodigoTipoMoneda>';
+    } else {
+        $xmlString .= '
+    <CodigoTipoMoneda>
+        <CodigoMoneda>CRC</CodigoMoneda>
+        <TipoCambio>1</TipoCambio>
+    </CodigoTipoMoneda>';
     }
 
     if ($totalServGravados != '') {
@@ -2956,64 +3542,34 @@ function genXMLTE()
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
 
-    if ($infoRefeTipoDoc != '' && $infoRefeFechaEmision != '') {
-
-        $xmlString .= '
-    <InformacionReferencia>';
-        if (in_array($infoRefeTipoDoc, TIPODOCREFVALUES, true)) {
-            $xmlString .= '
-            <TipoDocIR>' . $infoRefeTipoDoc . '</TipoDocIR>';
-        } else {
-            grace_error("El parámetro infoRefeTipoDoc no cumple con la estructura establecida. infoRefeTipoDoc = " . $infoRefeTipoDoc);
-            return "El parámetro infoRefeTipoDoc no cumple con la estructura establecida.";
-        }
-
-        if ($infoRefeTipoDoc === '99') {
-            if (isset($infoRefeTipoDocOtro) && strlen($infoRefeTipoDocOtro) >= 5 && strlen($infoRefeTipoDocOtro) <= 100) {
-                $xmlString .= '
-        <TipoDocRefOTRO>' . htmlspecialchars($infoRefeTipoDocOtro) . '</TipoDocRefOTRO>';
-            } else {
-                grace_error("El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida. infoRefeTipoDocOtro = " . $infoRefeTipoDocOtro);
-                return "El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida.";
+    if (is_array($informacionReferencia) && count($informacionReferencia) > 0) {
+        foreach ($informacionReferencia as $ref) {
+            if (!empty($ref->tipoDoc) && !empty($ref->fechaEmision)) {
+                if (in_array($ref->tipoDoc, TIPODOCREFVALUES, true)) {
+                    $xmlString .= '<InformacionReferencia>';
+                    $xmlString .= '<TipoDocIR>' . $ref->tipoDoc . '</TipoDocIR>';
+                    if ($ref->tipoDoc === '99' && isset($ref->tipoDocOtro)) {
+                        $xmlString .= '<TipoDocRefOTRO>' . htmlspecialchars($ref->tipoDocOtro) . '</TipoDocRefOTRO>';
+                    }
+                    if (isset($ref->numero)) {
+                        $xmlString .= '<Numero>' . $ref->numero . '</Numero>';
+                    }
+                    $xmlString .= '<FechaEmisionIR>' . $ref->fechaEmision . '</FechaEmisionIR>';
+                    if (isset($ref->codigo)) {
+                        $xmlString .= '<Codigo>' . $ref->codigo . '</Codigo>';
+                        if ($ref->codigo === '99' && isset($ref->codigoOtro)) {
+                            $xmlString .= '<CodigoReferenciaOTRO>' . htmlspecialchars($ref->codigoOtro) . '</CodigoReferenciaOTRO>';
+                        }
+                    }
+                    if (isset($ref->razon)) {
+                        $xmlString .= '<Razon>' . $ref->razon . '</Razon>';
+                    }
+                    $xmlString .= '</InformacionReferencia>';
+                } else {
+                    grace_error("El parámetro tipoDoc no cumple con la estructura establecida. tipoDoc = " . $ref->tipoDoc);
+                }
             }
         }
-
-        if (isset($infoRefeNumero) && $infoRefeNumero != "") {
-            $xmlString .= '
-        <Numero>' . $infoRefeNumero . '</Numero>';
-        }
-
-        $xmlString .= '
-        <FechaEmisionIR>' . $infoRefeFechaEmision . '</FechaEmisionIR>';
-
-        if (isset($infoRefeCodigo) && $infoRefeCodigo != "") {
-            if (in_array($infoRefeCodigo, CODIDOREFVALUES, true)) {
-                $xmlString .= '
-            <Codigo>' . $infoRefeCodigo . '</Codigo>';
-            } else {
-                grace_error("El parámetro infoRefeCodigo no cumple con la estructura establecida. infoRefeCodigo = " . $infoRefeCodigo);
-                return "El parámetro infoRefeCodigo no cumple con la estructura establecida.";
-            }
-        }
-
-        if ($infoRefeCodigo === '99') {
-            if (isset($infoRefeCodigoOtro) && strlen($infoRefeCodigoOtro) >= 5 && strlen($infoRefeCodigoOtro) <= 100) {
-                $xmlString .= '
-        <CodigoReferenciaOTRO>' . htmlspecialchars($infoRefeCodigoOtro) . '</CodigoReferenciaOTRO>';
-            } else {
-                grace_error("El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida. infoRefeCodigoOTRO = " . $infoRefeCodigoOtro);
-                return "El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida.";
-            }
-        }
-
-        if (isset($infoRefeRazon) && $infoRefeRazon != "") {
-            $xmlString .= '
-        <Razon>' . $infoRefeRazon . '</Razon>';
-        }
-
-        $xmlString .= '
-    </InformacionReferencia>';
-
     }
 
     // JSON de ejemplo
@@ -3046,41 +3602,45 @@ function genXMLTE()
     //  ]
     //}
 
-    if (isset($otros) && !empty($otros)) {
-        $xmlString .= '<Otros>';
+    // Start Otros element
+    $xmlString .= '<Otros>';
 
-        // Handle OtroTexto elements
-        if (isset($otros->otroTexto)) {
-            $xmlString .= '<OtroTexto';
-            if (isset($otros->otroTexto->codigo)) {
-                $xmlString .= ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"';
+    // Handle multiple OtroTexto elements
+    if (isset($otros->otroTexto)) {
+        if (is_array($otros->otroTexto)) {
+            foreach ($otros->otroTexto as $otroTexto) {
+                $codigo = isset($otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otroTexto->codigo) . '"' : '';
+                $texto = isset($otroTexto->texto) ? htmlspecialchars($otroTexto->texto) : '';
+                $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
             }
-            $xmlString .= '>' . htmlspecialchars($otros->otroTexto->texto) . '</OtroTexto>';
+        } else {
+            $codigo = isset($otros->otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"' : '';
+            $texto = isset($otros->otroTexto->texto) ? htmlspecialchars($otros->otroTexto->texto) : '';
+            $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
         }
-
-        // Handle OtroContenido elements
-        if (isset($otros->otroContenido)) {
-            foreach ($otros->otroContenido as $item) {
-                $xmlString .= '<OtroContenido';
-                if (isset($item->codigo)) {
-                    $xmlString .= ' codigo="' . htmlspecialchars($item->codigo) . '"';
-                }
-                $xmlString .= '>';
-                if (isset($item->contenidoEstructurado)) {
-                    foreach ($item->contenidoEstructurado as $element => $content) {
-                        $xmlString .= '<' . $element . ' xmlns="https://www.grupoice.com">';
-                        foreach ($content as $nestedElement => $nestedContent) {
-                            $xmlString .= '<' . $nestedElement . '>' . htmlspecialchars($nestedContent) . '</' . $nestedElement . '>';
-                        }
-                        $xmlString .= '</' . $element . '>';
-                    }
-                }
-                $xmlString .= '</OtroContenido>';
-            }
-        }
-
-        $xmlString .= '</Otros>';
     }
+
+    // Handle multiple OtroContenido elements
+    if (isset($otros->otroContenido) && is_array($otros->otroContenido)) {
+        foreach ($otros->otroContenido as $otroContenido) {
+            $codigo = isset($otroContenido->codigo) ? ' codigo="' . htmlspecialchars($otroContenido->codigo) . '"' : '';
+            $contenido = '';
+            if (isset($otroContenido->contenidoEstructurado) && is_object($otroContenido->contenidoEstructurado)) {
+                foreach ($otroContenido->contenidoEstructurado as $tag => $data) {
+                    $contenido .= '<' . $tag . '>';
+                    if (is_object($data)) {
+                        foreach ($data as $k => $v) {
+                            $contenido .= '<' . $k . '>' . htmlspecialchars($v) . '</' . $k . '>';
+                        }
+                    }
+                    $contenido .= '</' . $tag . '>';
+                }
+            }
+            $xmlString .= '<OtroContenido' . $codigo . '>' . $contenido . '</OtroContenido>';
+        }
+    }
+
+    $xmlString .= '</Otros>';
 
     // XML Resultante
     //<Otros>
@@ -3236,18 +3796,12 @@ function genXMLFec()
 
     $totalOtrosCargos = params_get("totalOtrosCargos");
     $totalComprobante = params_get("total_comprobante");
-    $otros = params_get("otros");
-    $otrosType = params_get("otrosType");
-    $infoRefeTipoDoc = params_get("infoRefeTipoDoc");
-    $infoRefeTipoDocOtro = params_get("infoRefeTipoDocOTRO");
-    $infoRefeNumero = params_get("infoRefeNumero");
-    $infoRefeFechaEmision = params_get("infoRefeFechaEmision");
-    $infoRefeCodigo = params_get("infoRefeCodigo");
-    $infoRefeCodigoOtro = params_get("infoRefeCodigoOTRO");
-    $infoRefeRazon = params_get("infoRefeRazon");
+    $otros = json_decode(params_get('otros'));
 
     // Detalles de la compra
     $detalles = json_decode(params_get("detalles"));
+    $informacionReferencia = json_decode(params_get("informacion_referencia"));
+
     $otrosCargos = json_decode(params_get("otrosCargos"));
     $mediosPago = json_decode(params_get("medios_pago"));
     // Resumen
@@ -3446,84 +4000,97 @@ function genXMLFec()
         <LineaDetalle>
             <NumeroLinea>' . $l . '</NumeroLinea>';
 
-        if (isset($d->codigo) && $d->codigo != "") {
-            $xmlString .= '
-            <Codigo>' . $d->codigo . '</Codigo>';
-        }
+        $xmlString .= '
+            <CodigoCABYS>' . $d->codigoCABYS . '</CodigoCABYS>';
 
-        if (isset($d->codigoComercial) && is_string($d->codigoComercial) && strlen($d->codigoComercial) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->codigoComercial) > 5) {
-                error_log("codigoComercial: " . count($d->codigoComercial) . " is greater than 5");
-            }
-            $d->codigoComercial = array_slice($d->codigoComercial, 0, 5);
-            foreach ($d->codigoComercial as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
-                }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
-            }
-        }
+        if (isset($d->codigoComercial) && !empty($d->codigoComercial)) {
+            // Convertir el objeto $d->codigoComercial en un array
+            $codigoComercialArray = (array)$d->codigoComercial;
 
-        if (isset($d->codigoComercialLinea) && $d->codigoComercialLinea != "" && $d->codigoComercialLinea != 0) {
-            foreach ($d->codigoComercialLinea as $c) {
-                if (isset($c->tipo) && $c->tipo != "" && isset($c->codigo) && $c->codigo != "") {
+            // Delimitar el array a solo 5 elementos
+            if (count($codigoComercialArray) > 5) {
+                error_log("codigoComercial: " . count($codigoComercialArray) . " is greater than 5");
+            }
+            $codigoComercialArray = array_slice($codigoComercialArray, 0, 5);
+
+            // Iterar sobre los elementos del array
+            foreach ($codigoComercialArray as $codigos) {
+                $c = (array)$codigos;
+                // Verificar si el elemento es un array asociativo
+                if (is_array($c) && isset($c['tipo']) && $c['tipo'] != "" && isset($c['codigo']) && $c['codigo'] != "") {
                     $xmlString .= '
-                    <CodigoComercial>
-                        <Tipo>' . $c->tipo . '</Tipo>';
+                        <CodigoComercial>
+                            <Tipo>' . $c['tipo'] . '</Tipo>
+                            <Codigo>' . $c['codigo'] . '</Codigo>
+                        </CodigoComercial>';
                 }
-                if (isset($c->codigo) && $c->codigo != "") {
-                    $xmlString .= '
-                        <Codigo>' . $c->codigo . '</Codigo>';
-                }
-                $xmlString .= '
-                    </CodigoComercial>';
             }
         }
 
         $xmlString .= '
             <Cantidad>' . $d->cantidad . '</Cantidad>
             <UnidadMedida>' . $d->unidadMedida . '</UnidadMedida>';
-        if (isset($c->codigo) && $c->codigo != "") {
+        if (isset($d->tipoTransaccion) && $d->tipoTransaccion != "") {
+            $xmlString .= '
+                <TipoTransaccion>' . $d->tipoTransaccion . '</TipoTransaccion>';
+        }
+        if (isset($d->unidadMedidaComercial) && $d->unidadMedidaComercial != "") {
             $xmlString .= '
                 <UnidadMedidaComercial>' . $d->unidadMedidaComercial . '</UnidadMedidaComercial>';
         }
         $xmlString .= '
-            <Detalle>' . $d->detalle . '</Detalle>
+            <Detalle>' . $d->detalle . '</Detalle>';
+        if (isset($d->numeroVINoSerie) && $d->numeroVINoSerie != "") {
+            $xmlString .= '<NumeroVINoSerie>' . $d->numeroVINoSerie . '</NumeroVINoSerie>';
+        }
+
+        if (isset($d->registroMedicamento) && $d->registroMedicamento !== "") {
+            $xmlString .= '<RegistroMedicamento>' . htmlspecialchars($d->registroMedicamento) . '</RegistroMedicamento>';
+        }
+        if (isset($d->formaFarmaceutica) && $d->formaFarmaceutica !== "") {
+            $xmlString .= '<FormaFarmaceutica>' . htmlspecialchars($d->formaFarmaceutica) . '</FormaFarmaceutica>';
+        }
+
+        $xmlString .= '
             <PrecioUnitario>' . $d->precioUnitario . '</PrecioUnitario>
             <MontoTotal>' . $d->montoTotal . '</MontoTotal>';
 
-        if (isset($d->descuento) && is_string($d->descuento) && strlen($d->descuento) != 0) {
-            //Delimita el array a solo 5 elementos
-            if (count($d->descuento) > 5) {
-                error_log("descuento: " . count($d->descuento) . " is greater than 5");
-            }
-            $d->descuento = array_slice($d->descuento, 0, 5);
-            foreach ($d->descuento as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
-                    $xmlString .= '<Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
-                }
-            }
-        }
+        if (isset($d->descuento) && !empty($d->descuento)) {
+            $descuentoArray = (array)$d->descuento;
 
-        if (isset($d->descuentoLinea) && $d->descuentoLinea != "" && $d->descuentoLinea != 0) {
-            foreach ($d->descuentoLinea as $dsc) {
-                if (isset($dsc->montoDescuento) && $dsc->montoDescuento != "" && isset($dsc->naturalezaDescuento) && $dsc->naturalezaDescuento != "") {
+            if (count($descuentoArray) > 5) {
+                error_log("descuento: " . count($descuentoArray) . " is greater than 5");
+            }
+            $descuentoArray = array_slice($descuentoArray, 0, 5);
+
+            foreach ($descuentoArray as $descuentos) {
+                $c = (array)$descuentos;
+                if (
+                    is_array($c) &&
+                    isset($c['montoDescuento']) && $c['montoDescuento'] !== "" &&
+                    isset($c['codigoDescuento']) && $c['codigoDescuento'] !== ""
+                ) {
                     $xmlString .= '
-                    <Descuento>
-                        <MontoDescuento>' . $dsc->montoDescuento . '</MontoDescuento>
-                        <NaturalezaDescuento>' . $dsc->naturalezaDescuento . '</NaturalezaDescuento>
-                    </Descuento>';
+                <Descuento>
+                    <MontoDescuento>' . $c['montoDescuento'] . '</MontoDescuento>
+                    <CodigoDescuento>' . $c['codigoDescuento'] . '</CodigoDescuento>';
+                    // CodigoDescuentoOTRO: obligatorio si codigoDescuento == "99" y existe el campo
+                    if (
+                        isset($c['codigoDescuento']) && $c['codigoDescuento'] === "99" &&
+                        isset($c['codigoDescuentoOTRO']) &&
+                        strlen($c['codigoDescuentoOTRO']) >= 5 && strlen($c['codigoDescuentoOTRO']) <= 100
+                    ) {
+                        $xmlString .= '<CodigoDescuentoOTRO>' . htmlspecialchars($c['codigoDescuentoOTRO']) . '</CodigoDescuentoOTRO>';
+                    }
+                    // NaturalezaDescuento: minOccurs=0, longitud 3-80
+                    if (
+                        isset($c['naturalezaDescuento']) &&
+                        strlen($c['naturalezaDescuento']) >= 3 && strlen($c['naturalezaDescuento']) <= 80
+                    ) {
+                        $xmlString .= '<NaturalezaDescuento>' . htmlspecialchars($c['naturalezaDescuento']) . '</NaturalezaDescuento>';
+                    }
+                    $xmlString .= '
+                </Descuento>';
                 }
             }
         }
@@ -3539,8 +4106,17 @@ function genXMLFec()
                 $xmlString .= '
                 <Impuesto>
                     <Codigo>' . $i->codigo . '</Codigo>';
+
+                // Add <CodigoImpuestoOTRO> if required
+                if (
+                    isset($i->codigo) && $i->codigo == "99" &&
+                    isset($i->codigoImpuestoOtro) && !empty($i->codigoImpuestoOtro)
+                ) {
+                    $xmlString .= '<CodigoImpuestoOTRO>' . $i->codigoImpuestoOtro . '</CodigoImpuestoOTRO>';
+                }
+
                 if (isset($i->codigoTarifa) && $i->codigoTarifa != "") {
-                    $xmlString .= '<CodigoTarifa>' . $i->codigoTarifa . '</CodigoTarifa>';
+                    $xmlString .= '<CodigoTarifaIVA>' . $i->codigoTarifa . '</CodigoTarifaIVA>';
                 }
 
                 if (isset($i->tarifa) && $i->tarifa != "") {
@@ -3548,7 +4124,7 @@ function genXMLFec()
                 }
 
                 if (isset($i->factorIVA) && $i->factorIVA != "") {
-                    $xmlString .= '<FactorIVA>' . $i->factorIVA . '</FactorIVA>';
+                    $xmlString .= '<FactorCalculoIVA>' . $i->factorIVA . '</FactorCalculoIVA>';
                 }
 
                 $xmlString .= '<Monto>' . $i->monto . '</Monto>';
@@ -3556,15 +4132,24 @@ function genXMLFec()
                 if (isset($i->exoneracion) && $i->exoneracion != "") {
                     $xmlString .= '
                     <Exoneracion>
-                        <TipoDocumento>' . $i->exoneracion->tipoDocumento . '</TipoDocumento>
-                        <NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>
-                        <NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
+                        <TipoDocumentoEX1>' . $i->exoneracion->tipoDocumento . '</TipoDocumentoEX1>';
+                    if (isset($i->exoneracion->tipoDocumentoOtro) && !empty($i->exoneracion->tipoDocumentoOtro)) {
+                        $xmlString .= '<TipoDocumentoOTRO>' . $i->exoneracion->tipoDocumentoOtro . '</TipoDocumentoOTRO>';
+                    }
+                    $xmlString .= '<NumeroDocumento>' . $i->exoneracion->numeroDocumento . '</NumeroDocumento>';
+                    if (isset($i->exoneracion->numeroArticulo) && !empty($i->exoneracion->numeroArticulo)) {
+                        $xmlString .= '<Articulo>' . $i->exoneracion->numeroArticulo . '</Articulo>';
+                    }
+                    if (isset($i->exoneracion->numeroInciso) && !empty($i->exoneracion->numeroInciso)) {
+                        $xmlString .= '<Inciso>' . $i->exoneracion->numeroInciso . '</Inciso>';
+                    }
+                    $xmlString .= '<NombreInstitucion>' . $i->exoneracion->nombreInstitucion . '</NombreInstitucion>';
                     if (isset($i->exoneracion->nombreInstitucionOtros) && !empty($i->exoneracion->nombreInstitucionOtros)) {
                         $xmlString .= '<NombreInstitucionOtros>' . $i->exoneracion->nombreInstitucionOtros . '</NombreInstitucionOtros>';
                     }
                     $xmlString .= '
-                        <FechaEmision>' . $i->exoneracion->fechaEmision . '</FechaEmision>
-                        <PorcentajeExoneracion>' . $i->exoneracion->porcentajeExoneracion . '</PorcentajeExoneracion>
+                        <FechaEmisionEX>' . $i->exoneracion->fechaEmision . '</FechaEmisionEX>
+                        <TarifaExonerada>' . $i->exoneracion->tarifaExoneracion . '</TarifaExonerada>
                         <MontoExoneracion>' . $i->exoneracion->montoExoneracion . '</MontoExoneracion>
                     </Exoneracion>';
                 }
@@ -3573,9 +4158,7 @@ function genXMLFec()
             }
         }
 
-        if (isset($d->impuestoNeto) && $d->impuestoNeto != "") {
-            $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
-        }
+        $xmlString .= '<ImpuestoNeto>' . $d->impuestoNeto . '</ImpuestoNeto>';
         $xmlString .= '<MontoTotalLinea>' . $d->montoTotalLinea . '</MontoTotalLinea>';
         $xmlString .= '</LineaDetalle>';
         $l++;
@@ -3625,6 +4208,12 @@ function genXMLFec()
             <CodigoMoneda>' . $codMoneda . '</CodigoMoneda>
             <TipoCambio>' . $tipoCambio . '</TipoCambio>
         </CodigoTipoMoneda>';
+    } else {
+        $xmlString .= '
+    <CodigoTipoMoneda>
+        <CodigoMoneda>CRC</CodigoMoneda>
+        <TipoCambio>1</TipoCambio>
+    </CodigoTipoMoneda>';
     }
 
     if ($totalServGravados != '') {
@@ -3759,65 +4348,34 @@ function genXMLFec()
         <TotalComprobante>' . $totalComprobante . '</TotalComprobante>
     </ResumenFactura>';
 
-    if ($infoRefeTipoDoc != '' && $infoRefeFechaEmision != '') {
-
-        $xmlString .= '
-    <InformacionReferencia>';
-
-        if (in_array($infoRefeTipoDoc, TIPODOCREFVALUES, true)) {
-            $xmlString .= '
-        <TipoDocIR>' . $infoRefeTipoDoc . '</TipoDocIR>';
-        } else {
-            grace_error("El parámetro infoRefeTipoDoc no cumple con la estructura establecida. infoRefeTipoDoc = " . $infoRefeTipoDoc);
-            return "El parámetro infoRefeTipoDoc no cumple con la estructura establecida.";
-        }
-
-        if ($infoRefeTipoDoc === '99') {
-            if (isset($infoRefeTipoDocOtro) && strlen($infoRefeTipoDocOtro) >= 5 && strlen($infoRefeTipoDocOtro) <= 100) {
-                $xmlString .= '
-        <TipoDocRefOTRO>' . htmlspecialchars($infoRefeTipoDocOtro) . '</TipoDocRefOTRO>';
-            } else {
-                grace_error("El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida. infoRefeTipoDocOtro = " . $infoRefeTipoDocOtro);
-                return "El parámetro infoRefeTipoDocOtro no cumple con la longitud establecida.";
+    if (is_array($informacionReferencia) && count($informacionReferencia) > 0) {
+        foreach ($informacionReferencia as $ref) {
+            if (!empty($ref->tipoDoc) && !empty($ref->fechaEmision)) {
+                if (in_array($ref->tipoDoc, TIPODOCREFVALUES, true)) {
+                    $xmlString .= '<InformacionReferencia>';
+                    $xmlString .= '<TipoDocIR>' . $ref->tipoDoc . '</TipoDocIR>';
+                    if ($ref->tipoDoc === '99' && isset($ref->tipoDocOtro)) {
+                        $xmlString .= '<TipoDocRefOTRO>' . htmlspecialchars($ref->tipoDocOtro) . '</TipoDocRefOTRO>';
+                    }
+                    if (isset($ref->numero)) {
+                        $xmlString .= '<Numero>' . $ref->numero . '</Numero>';
+                    }
+                    $xmlString .= '<FechaEmisionIR>' . $ref->fechaEmision . '</FechaEmisionIR>';
+                    if (isset($ref->codigo)) {
+                        $xmlString .= '<Codigo>' . $ref->codigo . '</Codigo>';
+                        if ($ref->codigo === '99' && isset($ref->codigoOtro)) {
+                            $xmlString .= '<CodigoReferenciaOTRO>' . htmlspecialchars($ref->codigoOtro) . '</CodigoReferenciaOTRO>';
+                        }
+                    }
+                    if (isset($ref->razon)) {
+                        $xmlString .= '<Razon>' . $ref->razon . '</Razon>';
+                    }
+                    $xmlString .= '</InformacionReferencia>';
+                } else {
+                    grace_error("El parámetro tipoDoc no cumple con la estructura establecida. tipoDoc = " . $ref->tipoDoc);
+                }
             }
         }
-
-        if (isset($infoRefeNumero) && $infoRefeNumero != "") {
-            $xmlString .= '
-        <Numero>' . $infoRefeNumero . '</Numero>';
-        }
-
-        $xmlString .= '
-        <FechaEmisionIR>' . $infoRefeFechaEmision . '</FechaEmisionIR>';
-
-        if (isset($infoRefeCodigo) && $infoRefeCodigo != "") {
-            if (in_array($infoRefeCodigo, CODIDOREFVALUES, true)) {
-                $xmlString .= '
-            <Codigo>' . $infoRefeCodigo . '</Codigo>';
-            } else {
-                grace_error("El parámetro infoRefeCodigo no cumple con la estructura establecida. infoRefeCodigo = " . $infoRefeCodigo);
-                return "El parámetro infoRefeCodigo no cumple con la estructura establecida.";
-            }
-        }
-
-        if ($infoRefeCodigo === '99') {
-            if (isset($infoRefeCodigoOtro) && strlen($infoRefeCodigoOtro) >= 5 && strlen($infoRefeCodigoOtro) <= 100) {
-                $xmlString .= '
-        <CodigoReferenciaOTRO>' . htmlspecialchars($infoRefeCodigoOtro) . '</CodigoReferenciaOTRO>';
-            } else {
-                grace_error("El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida. infoRefeCodigoOTRO = " . $infoRefeCodigoOtro);
-                return "El parámetro infoRefeCodigoOTRO no cumple con la longitud establecida.";
-            }
-        }
-
-        if (isset($infoRefeRazon) && $infoRefeRazon != "") {
-            $xmlString .= '
-        <Razon>' . $infoRefeRazon . '</Razon>';
-        }
-
-        $xmlString .= '
-    </InformacionReferencia>';
-
     }
 
     // JSON de ejemplo
@@ -3850,41 +4408,45 @@ function genXMLFec()
     //  ]
     //}
 
-    if (isset($otros) && !empty($otros)) {
-        $xmlString .= '<Otros>';
+    // Start Otros element
+    $xmlString .= '<Otros>';
 
-        // Handle OtroTexto elements
-        if (isset($otros->otroTexto)) {
-            $xmlString .= '<OtroTexto';
-            if (isset($otros->otroTexto->codigo)) {
-                $xmlString .= ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"';
+    // Handle multiple OtroTexto elements
+    if (isset($otros->otroTexto)) {
+        if (is_array($otros->otroTexto)) {
+            foreach ($otros->otroTexto as $otroTexto) {
+                $codigo = isset($otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otroTexto->codigo) . '"' : '';
+                $texto = isset($otroTexto->texto) ? htmlspecialchars($otroTexto->texto) : '';
+                $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
             }
-            $xmlString .= '>' . htmlspecialchars($otros->otroTexto->texto) . '</OtroTexto>';
+        } else {
+            $codigo = isset($otros->otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"' : '';
+            $texto = isset($otros->otroTexto->texto) ? htmlspecialchars($otros->otroTexto->texto) : '';
+            $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
         }
-
-        // Handle OtroContenido elements
-        if (isset($otros->otroContenido)) {
-            foreach ($otros->otroContenido as $item) {
-                $xmlString .= '<OtroContenido';
-                if (isset($item->codigo)) {
-                    $xmlString .= ' codigo="' . htmlspecialchars($item->codigo) . '"';
-                }
-                $xmlString .= '>';
-                if (isset($item->contenidoEstructurado)) {
-                    foreach ($item->contenidoEstructurado as $element => $content) {
-                        $xmlString .= '<' . $element . ' xmlns="https://www.grupoice.com">';
-                        foreach ($content as $nestedElement => $nestedContent) {
-                            $xmlString .= '<' . $nestedElement . '>' . htmlspecialchars($nestedContent) . '</' . $nestedElement . '>';
-                        }
-                        $xmlString .= '</' . $element . '>';
-                    }
-                }
-                $xmlString .= '</OtroContenido>';
-            }
-        }
-
-        $xmlString .= '</Otros>';
     }
+
+    // Handle multiple OtroContenido elements
+    if (isset($otros->otroContenido) && is_array($otros->otroContenido)) {
+        foreach ($otros->otroContenido as $otroContenido) {
+            $codigo = isset($otroContenido->codigo) ? ' codigo="' . htmlspecialchars($otroContenido->codigo) . '"' : '';
+            $contenido = '';
+            if (isset($otroContenido->contenidoEstructurado) && is_object($otroContenido->contenidoEstructurado)) {
+                foreach ($otroContenido->contenidoEstructurado as $tag => $data) {
+                    $contenido .= '<' . $tag . '>';
+                    if (is_object($data)) {
+                        foreach ($data as $k => $v) {
+                            $contenido .= '<' . $k . '>' . htmlspecialchars($v) . '</' . $k . '>';
+                        }
+                    }
+                    $contenido .= '</' . $tag . '>';
+                }
+            }
+            $xmlString .= '<OtroContenido' . $codigo . '>' . $contenido . '</OtroContenido>';
+        }
+    }
+
+    $xmlString .= '</Otros>';
 
     // XML Resultante
     //<Otros>
@@ -3969,8 +4531,8 @@ function genXMLFee()
     $totalOtrosCargos = params_get("totalOtrosCargos");
     $totalComprobante = params_get("total_comprobante");
 
-    $informacionReferencia = json_decode(params_get("informacionReferencia"));
-    $otros = json_decode(params_get("otros"));
+    $informacionReferencia = json_decode(params_get("informacion_referencia"));
+    $otros = json_decode(params_get('otros'));
     // Resumen
     $totalDesgloseImpuesto = json_decode(params_get("totalDesgloseImpuesto"));
 
@@ -4153,10 +4715,8 @@ function genXMLFee()
             <PartidaArancelaria>' . $d->partidaArancelaria . '</PartidaArancelaria>';
         }
 
-        if (isset($d->codigo) && $d->codigo != "") {
-            $xmlString .= '
-            <Codigo>' . $d->codigo . '</Codigo>';
-        }
+        $xmlString .= '
+            <CodigoCABYS>' . $d->codigoCABYS . '</CodigoCABYS>';
 
         if (isset($d->codigoComercial) && !empty($d->codigoComercial)) {
             // Convertir el objeto $d->codigoComercial en un array
@@ -4186,35 +4746,150 @@ function genXMLFee()
         $xmlString .= '
             <Cantidad>' . $d->cantidad . '</Cantidad>
             <UnidadMedida>' . $d->unidadMedida . '</UnidadMedida>';
+        if (isset($d->tipoTransaccion) && $d->tipoTransaccion != "") {
+            $xmlString .= '
+                <TipoTransaccion>' . $d->tipoTransaccion . '</TipoTransaccion>';
+        }
         if (isset($d->unidadMedidaComercial) && $d->unidadMedidaComercial != "") {
             $xmlString .= '
                 <UnidadMedidaComercial>' . $d->unidadMedidaComercial . '</UnidadMedidaComercial>';
         }
         $xmlString .= '
-            <Detalle>' . $d->detalle . '</Detalle>
+            <Detalle>' . $d->detalle . '</Detalle>';
+        if (isset($d->numeroVINoSerie) && $d->numeroVINoSerie != "") {
+            $xmlString .= '<NumeroVINoSerie>' . $d->numeroVINoSerie . '</NumeroVINoSerie>';
+        }
+
+        if (isset($d->registroMedicamento) && $d->registroMedicamento !== "") {
+            $xmlString .= '<RegistroMedicamento>' . htmlspecialchars($d->registroMedicamento) . '</RegistroMedicamento>';
+        }
+        if (isset($d->formaFarmaceutica) && $d->formaFarmaceutica !== "") {
+            $xmlString .= '<FormaFarmaceutica>' . htmlspecialchars($d->formaFarmaceutica) . '</FormaFarmaceutica>';
+        }
+
+        if (isset($d->detalleSurtido) && is_array($d->detalleSurtido) && count($d->detalleSurtido) > 0) {
+            $xmlString .= '<DetalleSurtido>';
+            $lineas = array_slice($d->detalleSurtido, 0, 20);
+            foreach ($lineas as $linea) {
+                $xmlString .= '<LineaDetalleSurtido>';
+                $xmlString .= '<CodigoCABYSSurtido>' . $linea->codigoCABYSSurtido . '</CodigoCABYSSurtido>';
+                if (isset($linea->codigoComercialSurtido) && is_array($linea->codigoComercialSurtido)) {
+                    $codigos = array_slice($linea->codigoComercialSurtido, 0, 5);
+                    foreach ($codigos as $codigo) {
+                        $xmlString .= '<CodigoComercialSurtido>';
+                        $xmlString .= '<TipoSurtido>' . $codigo->tipoSurtido . '</TipoSurtido>';
+                        $xmlString .= '<CodigoSurtido>' . $codigo->codigoSurtido . '</CodigoSurtido>';
+                        $xmlString .= '</CodigoComercialSurtido>';
+                    }
+                }
+                $xmlString .= '<CantidadSurtido>' . $linea->cantidadSurtido . '</CantidadSurtido>';
+                $xmlString .= '<UnidadMedidaSurtido>' . $linea->unidadMedidaSurtido . '</UnidadMedidaSurtido>';
+                if (isset($linea->unidadMedidaComercialSurtido)) {
+                    $xmlString .= '<UnidadMedidaComercialSurtido>' . $linea->unidadMedidaComercialSurtido . '</UnidadMedidaComercialSurtido>';
+                }
+                $xmlString .= '<DetalleSurtido>' . $linea->detalleSurtido . '</DetalleSurtido>';
+                $xmlString .= '<PrecioUnitarioSurtido>' . $linea->precioUnitarioSurtido . '</PrecioUnitarioSurtido>';
+                $xmlString .= '<MontoTotalSurtido>' . $linea->montoTotalSurtido . '</MontoTotalSurtido>';
+                if (isset($linea->descuentoSurtido) && is_array($linea->descuentoSurtido)) {
+                    $descuentos = array_slice($linea->descuentoSurtido, 0, 5);
+                    foreach ($descuentos as $desc) {
+                        $xmlString .= '<DescuentoSurtido>';
+                        $xmlString .= '<MontoDescuentoSurtido>' . $desc->montoDescuentoSurtido . '</MontoDescuentoSurtido>';
+                        $xmlString .= '<CodigoDescuentoSurtido>' . $desc->codigoDescuentoSurtido . '</CodigoDescuentoSurtido>';
+                        if (isset($desc->descuentoSurtidoOtros)) {
+                            $xmlString .= '<DescuentoSurtidoOtros>' . $desc->descuentoSurtidoOtros . '</DescuentoSurtidoOtros>';
+                        }
+                        $xmlString .= '</DescuentoSurtido>';
+                    }
+                }
+                $xmlString .= '<SubTotalSurtido>' . $linea->subTotalSurtido . '</SubTotalSurtido>';
+                if (isset($linea->ivaCobradoFabricaSurtido)) {
+                    $xmlString .= '<IVACobradoFabricaSurtido>' . $linea->ivaCobradoFabricaSurtido . '</IVACobradoFabricaSurtido>';
+                }
+                $xmlString .= '<BaseImponibleSurtido>' . $linea->baseImponibleSurtido . '</BaseImponibleSurtido>';
+                if (isset($linea->impuestoSurtido) && is_array($linea->impuestoSurtido)) {
+                    $impuestos = array_slice($linea->impuestoSurtido, 0, 1000);
+                    foreach ($impuestos as $imp) {
+                        $xmlString .= '<ImpuestoSurtido>';
+                        $xmlString .= '<CodigoImpuestoSurtido>' . $imp->codigoImpuestoSurtido . '</CodigoImpuestoSurtido>';
+                        if (isset($imp->codigoImpuestoOTROSurtido)) {
+                            $xmlString .= '<CodigoImpuestoOTROSurtido>' . $imp->codigoImpuestoOTROSurtido . '</CodigoImpuestoOTROSurtido>';
+                        }
+                        if (isset($imp->codigoTarifaIVASurtido)) {
+                            $xmlString .= '<CodigoTarifaIVASurtido>' . $imp->codigoTarifaIVASurtido . '</CodigoTarifaIVASurtido>';
+                        }
+                        if (isset($imp->tarifaSurtido)) {
+                            $xmlString .= '<TarifaSurtido>' . $imp->tarifaSurtido . '</TarifaSurtido>';
+                        }
+                        if (isset($imp->datosImpuestoEspecificoSurtido)) {
+                            $e = $imp->datosImpuestoEspecificoSurtido;
+                            $xmlString .= '<DatosImpuestoEspecificoSurtido>';
+                            if (isset($e->cantidadUnidadMedidaSurtido)) {
+                                $xmlString .= '<CantidadUnidadMedidaSurtido>' . $e->cantidadUnidadMedidaSurtido . '</CantidadUnidadMedidaSurtido>';
+                            }
+                            if (isset($e->porcentajeSurtido)) {
+                                $xmlString .= '<PorcentajeSurtido>' . $e->porcentajeSurtido . '</PorcentajeSurtido>';
+                            }
+                            if (isset($e->proporcionSurtido)) {
+                                $xmlString .= '<ProporcionSurtido>' . $e->proporcionSurtido . '</ProporcionSurtido>';
+                            }
+                            if (isset($e->volumenUnidadConsumoSurtido)) {
+                                $xmlString .= '<VolumenUnidadConsumoSurtido>' . $e->volumenUnidadConsumoSurtido . '</VolumenUnidadConsumoSurtido>';
+                            }
+                            if (isset($e->impuestoUnidadSurtido)) {
+                                $xmlString .= '<ImpuestoUnidadSurtido>' . $e->impuestoUnidadSurtido . '</ImpuestoUnidadSurtido>';
+                            }
+                            $xmlString .= '</DatosImpuestoEspecificoSurtido>';
+                        }
+                        $xmlString .= '<MontoImpuestoSurtido>' . $imp->montoImpuestoSurtido . '</MontoImpuestoSurtido>';
+                        $xmlString .= '</ImpuestoSurtido>';
+                    }
+                }
+                $xmlString .= '</LineaDetalleSurtido>';
+            }
+            $xmlString .= '</DetalleSurtido>';
+        }
+
+        $xmlString .= '
             <PrecioUnitario>' . $d->precioUnitario . '</PrecioUnitario>
             <MontoTotal>' . $d->montoTotal . '</MontoTotal>';
 
         if (isset($d->descuento) && !empty($d->descuento)) {
-            // Convertir el objeto $d->descuento en un array
             $descuentoArray = (array)$d->descuento;
 
-            // Delimitar el array a solo 5 elementos
             if (count($descuentoArray) > 5) {
                 error_log("descuento: " . count($descuentoArray) . " is greater than 5");
             }
             $descuentoArray = array_slice($descuentoArray, 0, 5);
 
-            // Iterar sobre los elementos del array
             foreach ($descuentoArray as $descuentos) {
                 $c = (array)$descuentos;
-                // Verificar si el elemento es un array asociativo
-                if (is_array($c) && isset($c['montoDescuento']) && $c['montoDescuento'] != "" && isset($c['naturalezaDescuento']) && $c['naturalezaDescuento'] != "") {
+                if (
+                    is_array($c) &&
+                    isset($c['montoDescuento']) && $c['montoDescuento'] !== "" &&
+                    isset($c['codigoDescuento']) && $c['codigoDescuento'] !== ""
+                ) {
                     $xmlString .= '
-                        <Descuento>
-                            <MontoDescuento>' . $c['montoDescuento'] . '</MontoDescuento>
-                            <NaturalezaDescuento>' . $c['naturalezaDescuento'] . '</NaturalezaDescuento>
-                        </Descuento>';
+                <Descuento>
+                    <MontoDescuento>' . $c['montoDescuento'] . '</MontoDescuento>
+                    <CodigoDescuento>' . $c['codigoDescuento'] . '</CodigoDescuento>';
+                    // CodigoDescuentoOTRO: obligatorio si codigoDescuento == "99" y existe el campo
+                    if (
+                        isset($c['codigoDescuento']) && $c['codigoDescuento'] === "99" &&
+                        isset($c['codigoDescuentoOTRO']) &&
+                        strlen($c['codigoDescuentoOTRO']) >= 5 && strlen($c['codigoDescuentoOTRO']) <= 100
+                    ) {
+                        $xmlString .= '<CodigoDescuentoOTRO>' . htmlspecialchars($c['codigoDescuentoOTRO']) . '</CodigoDescuentoOTRO>';
+                    }
+                    // NaturalezaDescuento: minOccurs=0, longitud 3-80
+                    if (
+                        isset($c['naturalezaDescuento']) &&
+                        strlen($c['naturalezaDescuento']) >= 3 && strlen($c['naturalezaDescuento']) <= 80
+                    ) {
+                        $xmlString .= '<NaturalezaDescuento>' . htmlspecialchars($c['naturalezaDescuento']) . '</NaturalezaDescuento>';
+                    }
+                    $xmlString .= '
+                </Descuento>';
                 }
             }
         }
@@ -4229,8 +4904,16 @@ function genXMLFee()
                     $xmlString .= '<Codigo>' . $i->codigo . '</Codigo>';
                 }
 
+                // Add <CodigoImpuestoOTRO> if required
+                if (
+                    isset($i->codigo) && $i->codigo == "99" &&
+                    isset($i->codigoImpuestoOtro) && !empty($i->codigoImpuestoOtro)
+                ) {
+                    $xmlString .= '<CodigoImpuestoOTRO>' . $i->codigoImpuestoOtro . '</CodigoImpuestoOTRO>';
+                }
+
                 if (isset($i->codigoTarifa) && $i->codigoTarifa != "") {
-                    $xmlString .= '<CodigoTarifa>' . $i->codigoTarifa . '</CodigoTarifa>';
+                    $xmlString .= '<CodigoTarifaIVA>' . $i->codigoTarifa . '</CodigoTarifaIVA>';
                 }
 
                 if (isset($i->tarifa) && $i->tarifa != "") {
@@ -4238,7 +4921,7 @@ function genXMLFee()
                 }
 
                 if (isset($i->factorIVA) && $i->factorIVA != "") {
-                    $xmlString .= '<FactorIVA>' . $i->factorIVA . '</FactorIVA>';
+                    $xmlString .= '<FactorCalculoIVA>' . $i->factorIVA . '</FactorCalculoIVA>';
                 }
 
                 if (isset($i->monto) && $i->monto != "") {
@@ -4350,12 +5033,18 @@ function genXMLFee()
     $xmlString .= '
     <ResumenFactura>';
 
-    if ($codMoneda != '' && $tipoCambio != '' && $tipoCambio != 0) {
+    if ($codMoneda != '' && $codMoneda != 'CRC' && $tipoCambio != '' && $tipoCambio != 0) {
         $xmlString .= '
         <CodigoTipoMoneda>
             <CodigoMoneda>' . $codMoneda . '</CodigoMoneda>
             <TipoCambio>' . $tipoCambio . '</TipoCambio>
         </CodigoTipoMoneda>';
+    } else {
+        $xmlString .= '
+    <CodigoTipoMoneda>
+        <CodigoMoneda>CRC</CodigoMoneda>
+        <TipoCambio>1</TipoCambio>
+    </CodigoTipoMoneda>';
     }
 
     if ($totalServGravados != '') {
@@ -4483,50 +5172,32 @@ function genXMLFee()
     //      ]
     //    }
 
-    if (isset($informacionReferencia) && $informacionReferencia != "") {
-        if (count((array)$informacionReferencia) > 10) {
-            error_log("informacionReferencia: " . count((array)$informacionReferencia) . " is greater than 10");
-        } else {
-            foreach ($informacionReferencia as $i) {
-                $xmlString .= '
-                    <InformacionReferencia>';
-
-                if (isset($i->tipoDoc) && $i->tipoDoc != "") {
-                    $xmlString .= '
-                    <TipoDocIR>' . $i->tipoDoc . '</TipoDocIR>';
+    if (is_array($informacionReferencia) && count($informacionReferencia) > 0) {
+        foreach ($informacionReferencia as $ref) {
+            if (!empty($ref->tipoDoc) && !empty($ref->fechaEmision)) {
+                if (in_array($ref->tipoDoc, TIPODOCREFVALUES, true)) {
+                    $xmlString .= '<InformacionReferencia>';
+                    $xmlString .= '<TipoDocIR>' . $ref->tipoDoc . '</TipoDocIR>';
+                    if ($ref->tipoDoc === '99' && isset($ref->tipoDocOtro)) {
+                        $xmlString .= '<TipoDocRefOTRO>' . htmlspecialchars($ref->tipoDocOtro) . '</TipoDocRefOTRO>';
+                    }
+                    if (isset($ref->numero)) {
+                        $xmlString .= '<Numero>' . $ref->numero . '</Numero>';
+                    }
+                    $xmlString .= '<FechaEmisionIR>' . $ref->fechaEmision . '</FechaEmisionIR>';
+                    if (isset($ref->codigo)) {
+                        $xmlString .= '<Codigo>' . $ref->codigo . '</Codigo>';
+                        if ($ref->codigo === '99' && isset($ref->codigoOtro)) {
+                            $xmlString .= '<CodigoReferenciaOTRO>' . htmlspecialchars($ref->codigoOtro) . '</CodigoReferenciaOTRO>';
+                        }
+                    }
+                    if (isset($ref->razon)) {
+                        $xmlString .= '<Razon>' . $ref->razon . '</Razon>';
+                    }
+                    $xmlString .= '</InformacionReferencia>';
+                } else {
+                    grace_error("El parámetro tipoDoc no cumple con la estructura establecida. tipoDoc = " . $ref->tipoDoc);
                 }
-
-                if (isset($i->tipoDocOtro) && $i->tipoDocOtro != "") {
-                    $xmlString .= '
-                    <TipoDocRefOTRO>' . $i->tipoDocOtro . '</TipoDocRefOTRO>';
-                }
-
-                if (isset($i->numero) && $i->numero != "") {
-                    $xmlString .= '
-                    <Numero>' . $i->numero . '</Numero>';
-                }
-
-                if (isset($i->fechaEmision) && $i->fechaEmision != "") {
-                    $xmlString .= '
-                    <FechaEmisionIR>' . $i->fechaEmision . '</FechaEmisionIR>';
-                }
-
-                if (isset($i->codigo) && $i->codigo != "") {
-                    $xmlString .= '
-                    <Codigo>' . $i->codigo . '</Codigo>';
-                }
-
-                if (isset($i->codigoOtro) && $i->codigoOtro != "") {
-                    $xmlString .= '
-                    <CodigoReferenciaOTRO>' . $i->codigoOtro . '</CodigoReferenciaOTRO>';
-                }
-
-                if (isset($i->razon) && $i->razon != "") {
-                    $xmlString .= '
-                    <Razon>' . $i->razon . '</Razon>';
-                }
-
-                $xmlString .= '</InformacionReferencia>';
             }
         }
     }
@@ -4581,41 +5252,45 @@ function genXMLFee()
     //  ]
     //}
 
-    if (isset($otros) && !empty($otros)) {
-        $xmlString .= '<Otros>';
+    // Start Otros element
+    $xmlString .= '<Otros>';
 
-        // Handle OtroTexto elements
-        if (isset($otros->otroTexto)) {
-            $xmlString .= '<OtroTexto';
-            if (isset($otros->otroTexto->codigo)) {
-                $xmlString .= ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"';
+    // Handle multiple OtroTexto elements
+    if (isset($otros->otroTexto)) {
+        if (is_array($otros->otroTexto)) {
+            foreach ($otros->otroTexto as $otroTexto) {
+                $codigo = isset($otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otroTexto->codigo) . '"' : '';
+                $texto = isset($otroTexto->texto) ? htmlspecialchars($otroTexto->texto) : '';
+                $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
             }
-            $xmlString .= '>' . htmlspecialchars($otros->otroTexto->texto) . '</OtroTexto>';
+        } else {
+            $codigo = isset($otros->otroTexto->codigo) ? ' codigo="' . htmlspecialchars($otros->otroTexto->codigo) . '"' : '';
+            $texto = isset($otros->otroTexto->texto) ? htmlspecialchars($otros->otroTexto->texto) : '';
+            $xmlString .= '<OtroTexto' . $codigo . '>' . $texto . '</OtroTexto>';
         }
-
-        // Handle OtroContenido elements
-        if (isset($otros->otroContenido)) {
-            foreach ($otros->otroContenido as $item) {
-                $xmlString .= '<OtroContenido';
-                if (isset($item->codigo)) {
-                    $xmlString .= ' codigo="' . htmlspecialchars($item->codigo) . '"';
-                }
-                $xmlString .= '>';
-                if (isset($item->contenidoEstructurado)) {
-                    foreach ($item->contenidoEstructurado as $element => $content) {
-                        $xmlString .= '<' . $element . ' xmlns="https://www.grupoice.com">';
-                        foreach ($content as $nestedElement => $nestedContent) {
-                            $xmlString .= '<' . $nestedElement . '>' . htmlspecialchars($nestedContent) . '</' . $nestedElement . '>';
-                        }
-                        $xmlString .= '</' . $element . '>';
-                    }
-                }
-                $xmlString .= '</OtroContenido>';
-            }
-        }
-
-        $xmlString .= '</Otros>';
     }
+
+    // Handle multiple OtroContenido elements
+    if (isset($otros->otroContenido) && is_array($otros->otroContenido)) {
+        foreach ($otros->otroContenido as $otroContenido) {
+            $codigo = isset($otroContenido->codigo) ? ' codigo="' . htmlspecialchars($otroContenido->codigo) . '"' : '';
+            $contenido = '';
+            if (isset($otroContenido->contenidoEstructurado) && is_object($otroContenido->contenidoEstructurado)) {
+                foreach ($otroContenido->contenidoEstructurado as $tag => $data) {
+                    $contenido .= '<' . $tag . '>';
+                    if (is_object($data)) {
+                        foreach ($data as $k => $v) {
+                            $contenido .= '<' . $k . '>' . htmlspecialchars($v) . '</' . $k . '>';
+                        }
+                    }
+                    $contenido .= '</' . $tag . '>';
+                }
+            }
+            $xmlString .= '<OtroContenido' . $codigo . '>' . $contenido . '</OtroContenido>';
+        }
+    }
+
+    $xmlString .= '</Otros>';
 
     // XML Resultante
     //<Otros>

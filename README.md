@@ -9,7 +9,9 @@ resolver problemas que enfrentamos en nuestra realidad en Costa Rica.
 [![GitHub](https://img.shields.io/github/license/CRLibre/API_Hacienda.svg)](https://github.com/CRLibre/API_Hacienda/blob/master/LICENSE)
 [![GitHub commit activity the past week, 4 weeks, year](https://img.shields.io/github/commit-activity/y/CRLibre/API_Hacienda.svg?logo=github)](https://github.com/CRLibre/API_Hacienda/commits/master)
 [![GitHub issues](https://img.shields.io/github/issues-raw/CRLibre/API_Hacienda.svg)](https://github.com/CRLibre/API_Hacienda/issues)
-[![GitHub issues](https://img.shields.io/github/issues-pr/CRLibre/API_Hacienda.svg)](https://github.com/CRLibre/API_Hacienda/pulls) [![Telegram @CRLibreFE](https://img.shields.io/badge/Telegram-%40CRLibreFE-blue.svg?logo=telegram)](https://crlibre.org/chats/)
+[![GitHub issues](https://img.shields.io/github/issues-pr/CRLibre/API_Hacienda.svg)](https://github.com/CRLibre/API_Hacienda/pulls) 
+[![PHPUnit Tests](https://github.com/CRLibre/API_Hacienda/actions/workflows/phpunit.yml/badge.svg)](https://github.com/CRLibre/API_Hacienda/actions/workflows/phpunit.yml)
+[![Telegram @CRLibreFE](https://img.shields.io/badge/Telegram-%40CRLibreFE-blue.svg?logo=telegram)](https://crlibre.org/chats/)
 
 En este repositorio estamos creando
 un [API](https://es.wikipedia.org/wiki/Interfaz_de_programaci%C3%B3n_de_aplicaciones "Interfaz de programación de aplicaciones, del inglés Application Programming Interface es un conjunto de subrutinas, funciones y procedimientos que ofrece una pieza de software para ser utilizado por otro software")

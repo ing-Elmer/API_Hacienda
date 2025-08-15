@@ -430,8 +430,17 @@ function genXMLFe()
       }
     ]
      */
+
     $l = 1;
+    
     foreach ($detalles as $d) {
+
+        foreach (["codigoCABYS","subTotal","impuestoAsumidoEmisorFabrica","impuestoNeto"] as $requiredField) {
+            if (!isset($d->{$requiredField}) || $d->{$requiredField} === '') {
+                tools_reply("Se requiere el campo $requiredField en el detalle #$l", true);
+            }
+        }
+
         $xmlString .= '
         <LineaDetalle>
             <NumeroLinea>' . $l . '</NumeroLinea>';

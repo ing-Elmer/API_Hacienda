@@ -103,7 +103,6 @@ function crlibreall_init()
                 array("key" => "total_ventas_neta",           "def" => "",     "req" => true),
                 array("key" => "totalDesgloseImpuesto",       "def" => "",     "req" => false),
                 array("key" => "total_impuestos",             "def" => "",     "req" => false),
-                array("key" => "total_impuestos",             "def" => "",     "req" => false),
                 array("key" => "total_impuestos_asumidos_fabrica", "def" => "", "req" => false),
                 array("key" => "totalIVADevuelto",            "def" => "0",    "req" => false),
                 array("key" => "totalOtrosCargos",            "def" => "",     "req" => false),

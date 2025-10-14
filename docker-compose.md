@@ -28,7 +28,7 @@ En este caso los siguientes commandos son normalmente utilizados en Ubuntu (Linu
 
 Existen varias herramientas que podrían iniciar los contenedores. Después de haber instalado los productos, normalmente se puede ejecutar comandos para arrancar la configuración de los contenedores.
 
-1. Crear file con nombre `settings.php` dentro de carpeta `www`
+1. Crear un file vacío con nombre `settings.php` dentro de carpeta `www`
 
    Este archivo `settings.php` sera persistido con un volumen de docker para no perder las referencias ni de los files uploaded ni de la crypto key para poder usar la misma base datos sin perder ninguna data aunque reiniciemos o le hagamos down a los contenedores.
 

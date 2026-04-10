@@ -9,7 +9,7 @@ setUpCryptoKey() {
     LOCALHOSTNAME=localhost
     CRLIBRE_API_HACIENDA_CRYPTO_KEY="non-set"
 
-    if [ -e "${SETTINGS_FILE_PATH}" ]; then
+    if [ -e "${SETTINGS_FILE_PATH}" ] && [ "${CRLIBRE_API_HACIENDA_FORCE_RESET}" != "true" ]; then
         echo "[$(date -u +%d-%m-%Y_%H-%S-%N)][${0}] *** Found ${SETTINGS_FILE_PATH}, checking if cryptoKey exists ***"
 
         if grep -q "'cryptoKey'" "${SETTINGS_FILE_PATH}"; then

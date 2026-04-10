@@ -23,6 +23,29 @@
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
+ob_start();
+register_shutdown_function(function () {
+    $lastError = error_get_last();
+    if (!$lastError)
+        return;
+
+    $fatalTypes = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR);
+    if (!in_array($lastError['type'], $fatalTypes, true))
+        return;
+
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json');
+    }
+
+    if (ob_get_length() === 0) {
+        echo json_encode(array(
+            'status' => 'error',
+            'resp' => 'Fatal error: ' . $lastError['message']
+        ));
+    }
+});
+
 // Cambiamos zona horaria a Costa Rica
 date_default_timezone_set("America/Costa_Rica");
 
@@ -88,4 +111,4 @@ else if (isset($argv))
     params_set('w', $_POST);
 }
 
-$r = boot_itUp();
+boot_itUp();

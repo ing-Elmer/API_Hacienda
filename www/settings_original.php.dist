@@ -32,6 +32,8 @@ $config['db']['pwd'] = '{dbPss}';
 $config['db']['user'] = "{dbUser}";
 # Database host
 $config['db']['host'] = "{dbHost}";
+# Optional database port (use host:port when provided)
+$config['db']['host'] .= ("{dbPort}" !== "" ? ":{dbPort}" : "");
 ##############################################################################
 #
 # Crypto Keys

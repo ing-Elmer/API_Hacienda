@@ -19,15 +19,32 @@
 /** @ingroup Constants
  *  @{
  */
+function _grace_toBool($value)
+{
+    if (is_bool($value))
+        return $value;
+
+    if (is_string($value))
+    {
+        $v = strtolower(trim($value));
+        if ($v === 'false' || $v === '0' || $v === 'off' || $v === 'no' || $v === '')
+            return false;
+        if ($v === 'true' || $v === '1' || $v === 'on' || $v === 'yes')
+            return true;
+    }
+
+    return (bool)$value;
+}
+
 # Details about how I am going to be running
 //! Print it all in grace
-define('GRACE_PRINT_ALL', conf_get('print_all', 'debug'));
+define('GRACE_PRINT_ALL', _grace_toBool(conf_get('print_all', 'debug')));
 //! Print absurd messages
-define('GRACE_PRINT_ABSURD', conf_get('print_absurd', 'debug'));
+define('GRACE_PRINT_ABSURD', _grace_toBool(conf_get('print_absurd', 'debug')));
 //! Print debug messages
-define('GRACE_PRINT_DEBUG', conf_get('print_debug', 'debug'));
+define('GRACE_PRINT_DEBUG', _grace_toBool(conf_get('print_debug', 'debug')));
 //! Print error messages
-define('GRACE_PRINT_ERROR', conf_get('print_error', 'debug'));
+define('GRACE_PRINT_ERROR', _grace_toBool(conf_get('print_error', 'debug')));
 
 /** @} */
 /** @ingroup GlobalVars

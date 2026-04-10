@@ -86,9 +86,34 @@ function db_Connect()
     grace_debug(conf_get('host', 'db'));
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+    $host = trim((string)conf_get('host', 'db'));
+    $port = null;
+
+    if (strpos($host, ':') !== false)
+    {
+        $hostParts = explode(':', $host, 2);
+        $host = $hostParts[0];
+        if (isset($hostParts[1]) && is_numeric($hostParts[1]))
+            $port = (int)$hostParts[1];
+    }
+
     try
     {
-        $dbConn = new mysqli(conf_get('host', 'db'), conf_get('user', 'db'), conf_get('pwd', 'db'), conf_get('name', 'db'));
+        $dbConn = mysqli_init();
+        if (!($dbConn instanceof mysqli))
+            throw new Exception('Unable to initialize mysqli');
+
+        mysqli_options($dbConn, MYSQLI_OPT_CONNECT_TIMEOUT, 5);
+        if (defined('MYSQLI_OPT_READ_TIMEOUT'))
+            mysqli_options($dbConn, MYSQLI_OPT_READ_TIMEOUT, 5);
+
+        $dbConn->real_connect(
+            $host,
+            conf_get('user', 'db'),
+            conf_get('pwd', 'db'),
+            conf_get('name', 'db'),
+            $port
+        );
     }
     catch (Throwable $e)
     {
@@ -159,7 +184,7 @@ function db_query($q, $return = 1)
 /**
  * Mitigates SQL injection by escaping string parameters
  * @param $string The string to escape
- * @return The escaped string
+ * @return string The escaped string
  */
 function db_escape($string = '')
 {

@@ -65,9 +65,19 @@ function users_bootMeUp()
 function users_loadCurrentUser()
 {
     global $user;
-    
+
+    $iam = trim((string)params_get('iam', ''));
+    $sessionKey = trim((string)params_get('sessionKey', ''));
+
+    # Public requests should not hit DB just to create an anonymous user context.
+    if ($iam === '' && $sessionKey === '')
+    {
+        $user = (object) array('idUser' => 0);
+        return;
+    }
+
     # If I am running on emebed mode I don't have any users, so I will just load it from the session
-    $user = users_load(array('userName' => params_get('iam', '')));
+    $user = users_load(array('userName' => $iam));
 }
 
 function users_init()

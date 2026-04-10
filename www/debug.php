@@ -1,17 +1,16 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+ini_set('log_errors', 1);
 
-// Simular el request
-$_POST['w'] = 'ejemplo';
-$_POST['r'] = 'hola';
-$_SERVER['CONTENT_TYPE'] = 'application/x-www-form-urlencoded';
+echo "PASO 1\n";
 
-ob_start();
-include('/var/www/html/api.php');
-$output = ob_get_clean();
+require_once('/var/www/html/settings.php');
+echo "PASO 2 - settings OK\n";
 
-echo "=== OUTPUT ===\n";
-echo $output . "\n";
-echo "=== ERRORS ===\n";
-echo error_get_last() ? print_r(error_get_last(), true) : "None\n";
+echo "coreInstall: " . $config['modules']['coreInstall'] . "\n";
+echo "corePath exists: " . (is_dir($config['modules']['corePath']) ? 'YES' : 'NO') . "\n";
+
+echo "PASO 3\n";
+require_once($config['modules']['corePath'] . 'cala/module.php');
+echo "PASO 4 - cala OK\n";

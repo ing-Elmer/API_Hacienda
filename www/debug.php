@@ -1,12 +1,27 @@
 <?php
-echo "<pre>";
-echo "coreInstall path: /var/www/api/\n";
-echo "Exists: " . (is_dir('/var/www/api/') ? 'YES' : 'NO') . "\n";
-echo "Exists ../api/: " . (is_dir('../api/') ? 'YES' : 'NO') . "\n";
-echo "\nDirectory listing of /var/www/:\n";
-print_r(scandir('/var/www/'));
-echo "\nDirectory listing of /var/www/api/ (if exists):\n";
-if(is_dir('/var/www/api/')) print_r(scandir('/var/www/api/'));
-echo "\nsettings.php content:\n";
-echo file_get_contents('/var/www/html/settings.php');
-echo "</pre>";
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+echo "PHP OK\n";
+
+// Test DB connection
+$host = getenv('CRLIBRE_API_HACIENDA_DB_HOST') ?: 'mysql.railway.internal';
+$user = getenv('CRLIBRE_API_HACIENDA_DB_USER') ?: 'root';
+$pass = getenv('CRLIBRE_API_HACIENDA_DB_PASSWORD') ?: '';
+$db   = getenv('CRLIBRE_API_HACIENDA_DB_NAME') ?: 'railway';
+
+echo "Connecting to: $host\n";
+
+try {
+    $pdo = new PDO("mysql:host=$host;port=3306;dbname=$db", $user, $pass);
+    echo "DB Connection: OK\n";
+} catch(Exception $e) {
+    echo "DB Error: " . $e->getMessage() . "\n";
+}
+
+// Test include
+echo "\nLoading api.php...\n";
+ob_start();
+include('/var/www/html/api.php');
+$output = ob_get_clean();
+echo "Output: " . $output . "\n";

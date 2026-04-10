@@ -28,7 +28,7 @@ setUpCryptoKey() {
     > "${SETTINGS_FILE_PATH}"
 
     echo "Waiting on Database Server to be ready"
-    while ! nc -z ${CRLIBRE_API_HACIENDA_DB_HOST} 3306; do
+   while ! nc -z ${CRLIBRE_API_HACIENDA_DB_HOST} ${CRLIBRE_API_HACIENDA_DB_PORT:-3306}; do
         echo "[$(date -u +%d-%m-%Y_%H-%S-%N)][${0}] Sleeping 1 sec.. waiting on MySQL"
         sleep 1
     done

@@ -1,4 +1,4 @@
-FROM php:7.4.9-apache
+FROM php:8.1-apache
 LABEL version="1.1"
 # VOLUME [ "/var/www/html" ]
 # VOLUME [ "/var/www/api" ]

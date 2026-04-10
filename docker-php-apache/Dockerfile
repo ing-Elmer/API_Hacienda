@@ -2,7 +2,8 @@ FROM php:7.4-apache-bullseye
 LABEL version="1.1"
 # VOLUME [ "/var/www/html" ]
 # VOLUME [ "/var/www/api" ]
-RUN apt-get update && apt-get -y install libpng-dev curl libcurl4-openssl-dev openssl netcat-openbsdRUN docker-php-ext-install pdo pdo_mysql mysqli gd curl
+RUN apt-get update && apt-get -y install libpng-dev curl libcurl4-openssl-dev openssl netcat-openbsd
+RUN docker-php-ext-install pdo pdo_mysql mysqli gd curl
 RUN a2enmod rewrite
 COPY ./docker-php-apache/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

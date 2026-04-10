@@ -1,0 +1,255 @@
+{
+  "info": {
+    "name": "CRLibre Railway Quickstart",
+    "_postman_id": "4c3aa3f4-1f2d-4f53-b39f-2fda2b9f9ad1",
+    "description": "Flujo base: token -> clave -> gen xml fe -> firmar -> enviar -> consultar",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1) Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "w", "value": "token", "type": "text" },
+            { "key": "r", "value": "gettoken", "type": "text" },
+            { "key": "grant_type", "value": "password", "type": "text" },
+            { "key": "client_id", "value": "{{client_id}}", "type": "text" },
+            { "key": "username", "value": "{{mh_username}}", "type": "text" },
+            { "key": "password", "value": "{{mh_password}}", "type": "text" }
+          ]
+        },
+        "url": "{{base_url}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "let payload = {};",
+              "try { payload = pm.response.json(); } catch (e) {}",
+              "if (payload && payload.resp && payload.resp.access_token) {",
+              "  pm.environment.set('token', payload.resp.access_token);",
+              "  if (payload.resp.refresh_token) pm.environment.set('refresh_token', payload.resp.refresh_token);",
+              "}",
+              "pm.test('Token obtenido o respuesta valida', function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 400, 401]);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2) Generar Clave",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "w", "value": "clave", "type": "text" },
+            { "key": "r", "value": "clave", "type": "text" },
+            { "key": "tipoDocumento", "value": "01", "type": "text" },
+            { "key": "tipoCedula", "value": "01", "type": "text" },
+            { "key": "cedula", "value": "{{emisor_cedula}}", "type": "text" },
+            { "key": "consecutivo", "value": "{{consecutivo}}", "type": "text" },
+            { "key": "situacion", "value": "1", "type": "text" },
+            { "key": "codigoSeguridad", "value": "12345678", "type": "text" }
+          ]
+        },
+        "url": "{{base_url}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "let payload = {};",
+              "try { payload = pm.response.json(); } catch (e) {}",
+              "if (payload && payload.resp) {",
+              "  if (payload.resp.clave) pm.environment.set('clave', payload.resp.clave);",
+              "  if (payload.resp.consecutivo) pm.environment.set('consecutivo', payload.resp.consecutivo);",
+              "}",
+              "pm.test('Respuesta de clave recibida', function () {",
+              "  pm.expect(pm.response.code).to.eql(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3) Generar XML FE",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "w", "value": "genXML", "type": "text" },
+            { "key": "r", "value": "gen_xml_fe", "type": "text" },
+            { "key": "clave", "value": "{{clave}}", "type": "text" },
+            { "key": "proveedor_sistemas", "value": "{{proveedor_sistemas}}", "type": "text" },
+            { "key": "codigo_actividad_emisor", "value": "{{codigo_actividad_emisor}}", "type": "text" },
+            { "key": "consecutivo", "value": "{{consecutivo}}", "type": "text" },
+            { "key": "fecha_emision", "value": "{{fecha_emision}}", "type": "text" },
+            { "key": "emisor_nombre", "value": "{{emisor_nombre}}", "type": "text" },
+            { "key": "emisor_tipo_identif", "value": "01", "type": "text" },
+            { "key": "emisor_num_identif", "value": "{{emisor_cedula}}", "type": "text" },
+            { "key": "emisor_provincia", "value": "1", "type": "text" },
+            { "key": "emisor_canton", "value": "01", "type": "text" },
+            { "key": "emisor_distrito", "value": "01", "type": "text" },
+            { "key": "emisor_otras_senas", "value": "San Jose", "type": "text" },
+            { "key": "emisor_email", "value": "{{emisor_email}}", "type": "text" },
+            { "key": "receptor_nombre", "value": "{{receptor_nombre}}", "type": "text" },
+            { "key": "receptor_tipo_identif", "value": "01", "type": "text" },
+            { "key": "receptor_num_identif", "value": "{{receptor_cedula}}", "type": "text" },
+            { "key": "condicion_venta", "value": "01", "type": "text" },
+            { "key": "plazo_credito", "value": "0", "type": "text" },
+            { "key": "medios_pago", "value": "01", "type": "text" },
+            { "key": "cod_moneda", "value": "CRC", "type": "text" },
+            { "key": "tipo_cambio", "value": "1", "type": "text" },
+            { "key": "total_ventas", "value": "10000", "type": "text" },
+            { "key": "total_ventas_neta", "value": "10000", "type": "text" },
+            { "key": "total_comprobante", "value": "10000", "type": "text" },
+            { "key": "detalles", "value": "{\"1\":{\"cantidad\":\"1\",\"unidadMedida\":\"Sp\",\"detalle\":\"Servicio\",\"precioUnitario\":\"10000\",\"montoTotal\":\"10000\",\"subtotal\":\"10000\",\"montoTotalLinea\":\"10000\"}}", "type": "text" }
+          ]
+        },
+        "url": "{{base_url}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "let payload = {};",
+              "try { payload = pm.response.json(); } catch (e) {}",
+              "if (payload && payload.resp) {",
+              "  if (payload.resp.xml) pm.environment.set('xml_base64', payload.resp.xml);",
+              "  if (payload.resp.xmlBase64) pm.environment.set('xml_base64', payload.resp.xmlBase64);",
+              "}",
+              "pm.test('XML generado', function () {",
+              "  pm.expect(pm.response.code).to.eql(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4) Firmar XML",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "w", "value": "firmarXML", "type": "text" },
+            { "key": "r", "value": "firmar", "type": "text" },
+            { "key": "p12Url", "value": "{{p12Url}}", "type": "text" },
+            { "key": "pinP12", "value": "{{pinP12}}", "type": "text" },
+            { "key": "inXml", "value": "{{xml_base64}}", "type": "text" }
+          ]
+        },
+        "url": "{{base_url}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "let payload = {};",
+              "try { payload = pm.response.json(); } catch (e) {}",
+              "if (payload && payload.resp && payload.resp.xmlFirmado) {",
+              "  pm.environment.set('xml_firmado', payload.resp.xmlFirmado);",
+              "}",
+              "pm.test('XML firmado recibido', function () {",
+              "  pm.expect(pm.response.code).to.eql(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5) Enviar FE a Hacienda",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "w", "value": "send", "type": "text" },
+            { "key": "r", "value": "json", "type": "text" },
+            { "key": "token", "value": "{{token}}", "type": "text" },
+            { "key": "clave", "value": "{{clave}}", "type": "text" },
+            { "key": "fecha", "value": "{{fecha_emision}}", "type": "text" },
+            { "key": "emi_tipoIdentificacion", "value": "01", "type": "text" },
+            { "key": "emi_numeroIdentificacion", "value": "{{emisor_cedula}}", "type": "text" },
+            { "key": "recp_tipoIdentificacion", "value": "01", "type": "text" },
+            { "key": "recp_numeroIdentificacion", "value": "{{receptor_cedula}}", "type": "text" },
+            { "key": "comprobanteXml", "value": "{{xml_firmado}}", "type": "text" },
+            { "key": "client_id", "value": "{{client_id}}", "type": "text" }
+          ]
+        },
+        "url": "{{base_url}}"
+      }
+    },
+    {
+      "name": "6) Consultar Estado",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "w", "value": "consultar", "type": "text" },
+            { "key": "r", "value": "consultarCom", "type": "text" },
+            { "key": "clave", "value": "{{clave}}", "type": "text" },
+            { "key": "token", "value": "{{token}}", "type": "text" },
+            { "key": "client_id", "value": "{{client_id}}", "type": "text" }
+          ]
+        },
+        "url": "{{base_url}}"
+      }
+    }
+  ]
+}

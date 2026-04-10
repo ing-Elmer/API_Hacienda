@@ -96,7 +96,8 @@ function _tools_reply($response)
 
     # This really should not be here, but so far, it should do
     //! @todo move this two functions somewhere else
-    users_updateLastAccess();
+    if (function_exists('users_updateLastAccess'))
+        users_updateLastAccess();
 
     # Close the log
     grace_storeLog();

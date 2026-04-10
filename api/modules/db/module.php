@@ -56,6 +56,12 @@ function db_allGood()
 {
     global $dbConn;
 
+    if (!($dbConn instanceof mysqli))
+    {
+        grace_error("DB Connection error: no active mysqli connection");
+        return ERROR_DB_NOT_CONNECTED;
+    }
+
     if ($dbConn->connect_error)
     {
         grace_error("DB Connection error: " . $dbConn->connect_error);
@@ -79,7 +85,17 @@ function db_Connect()
     grace_debug("config['db']['host']: ");
     grace_debug(conf_get('host', 'db'));
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-    @$dbConn = new mysqli(conf_get('host', 'db'), conf_get('user', 'db'), conf_get('pwd', 'db'), conf_get('name', 'db'));
+
+    try
+    {
+        $dbConn = new mysqli(conf_get('host', 'db'), conf_get('user', 'db'), conf_get('pwd', 'db'), conf_get('name', 'db'));
+    }
+    catch (Throwable $e)
+    {
+        $dbConn = null;
+        grace_error("Connection failed: " . $e->getMessage());
+        return false;
+    }
 
     # Check connection
     if ($dbConn->connect_error)
@@ -148,6 +164,9 @@ function db_query($q, $return = 1)
 function db_escape($string = '')
 {
     global $dbConn;
+
+    if (!($dbConn instanceof mysqli))
+        return '';
 
     return $dbConn->real_escape_string($string);
 }

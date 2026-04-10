@@ -35,8 +35,10 @@ else
 }
 
 $corePath = $config['modules']['coreInstall'];
-if (file_exists($corePath."core/boot.php"))
+if (file_exists($corePath."core/boot.php")) {
+    chdir($corePath."core/");
     include_once($corePath."core/boot.php");
+}
 else
 {
     echo "No se ha encontrado la carpeta de \"api\", por favor verifica la configuración \$config['modules']['coreInstall'] en \"settings.php\".";
